@@ -40,7 +40,7 @@ log.Fatal("No interpreter specified")
 parts = append(parts, tmpPath)
 parts = append(parts, os.Args[1:]...)
 
-cmd := exec.Command(intPath, parts[1:]...)  // first part is binary, already embedded
+cmd := exec.Command(intPath, parts[1:]...)
 cmd.Env = append(os.Environ(), "LD_LIBRARY_PATH=./.lib")
 cmd.Stdout = os.Stdout
 cmd.Stderr = os.Stderr
