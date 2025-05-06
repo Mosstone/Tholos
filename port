@@ -1,0 +1,284 @@
+#!/usr/bin/env bash
+
+
+version='v. 0.1.4'
+
+
+
+
+
+
+printhelp() { echo '[094m
+    Clones libraries and creates a portable compiled wrapper for the target file in the current directory
+
+    Usage:  $ port port-src.sh
+            $ ./myscript.sh.bin <<< Fully portable, libraries and interpreter is included in binary
+            Bonjour Monde
+            $ ls . | grep myscript
+            port-src.sh
+            port-src.sh.go      <<< You can delete this
+            port-src.sh.bin
+
+            $ port "Bonjour" --link
+            $ Bonjour
+            Bonsoir
+            $ Bonjour
+            Bonsoir
+
+    Flags:  --link|--path
+            --verbose
+            --quiet
+
+    Once generated the binary is fully standalone, whereas the .go can be integrated into golang projects
+        The .go file depends on the ./.lib folder that gets created but the compiler embeds it in the bin
+        This utility is language agnostic, automatically embedding the interpreter listed in the schebang
+
+    Use --link or --path to also add the binary as a command
+        use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
+        ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
+
+		Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
+        Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
+        without the project sliding deeper into rust territory. If you keep all of the rust embedded code
+        in the same file, they will all share the same .lib folder and thus be using the same rust
+
+
+		Does not work with java, julia, or elixir short of a workaround due to their strict topologies :(
+
+    Supported languages
+bash
+javascript
+python
+rust
+ruby
+php
+lua
+haskell
+perl
+scala
+deno
+
+    Unsupported languages
+java
+fortran
+assembly
+elixir
+zig
+
+    Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
+        Anything other than that will not pass the enforcement check
+        You can replace the # with the comment for the language being used, //!/usr/bin/env is also valid
+
+[0m'; }
+
+
+for flag in "$@"; do
+	case $flag in
+
+		--help)
+			echo "[094m    $version[0m"
+			printhelp
+			exit 0
+		;;
+
+		--version)
+			echo "[094m    $version[0m"
+			exit 0
+		;;
+
+		--verbose)
+			verbose=/dev/stdout
+		;;
+
+		--quiet)
+			quiet=/dev/null
+		;;
+
+		--link)
+			:	#	defined in main()
+		;;
+
+		--path)
+			:	#	defined in main()
+		;;
+		
+	esac
+done
+
+
+brand() {
+	grep -q "虚" /dev/shm/.imNotHere 2> /dev/null || cat <<-'EOF' > /dev/shm/.imNotHere 2> /dev/null
+[094m                           .-*%%%*=:.     :.            .            .                .                                   .                                      .                                               
+[094m                      :#虚虚虚虚虚虚虚虚虚虚%###%=  _ .      .                  .                      .                                                                                            .            
+[094m                  .=虚虚虚虚虚虚虚%#*****-   .                                      .                                                                                   .                               .        
+[094m        .  .     -虚虚虚虚虚虚%-                 .        .                                                                              .              .                                                        
+[094m             .  =虚虚虚虚虚虚%=      .       .                   .          .                                .                                                                          .                        
+[094m              .-%虚虚虚虚虚虚虚*.                                                 .                                          .                                                                                   
+[094m      .  ...:*虚虚虚虚虚虚虚虚虚%-  .      .                                                  .                                                                                                                  
+[094m        .+虚虚虚虚虚虚虚虚虚虚虚%+.             .   .        .                                                                                           .                                              .        
+[094m       =虚虚虚虚虚虚虚虚虚虚虚虚*:                                     .                                                           .                                                 .                           
+[094m      -虚虚虚虚虚虚虚虚虚虚虚+         .  .     .                                                                                                                       .                                        
+[094m      #虚虚虚虚虚虚虚虚虚*.   .         .     .                                .            .                .                                         .                                                         
+[094m      虚虚虚虚虚虚虚虚%*..:=-..                                                 .                                                                                                                                
+[094m      %虚虚虚虚虚虚%--  #%%%*:   .   .  .          .                  .                                                                                                                                          
+[094m      *虚虚虚虚虚*:  *虚虚虚%=.      :#=                    .                             .                                   .                                  .                                               
+[094m      :虚虚虚虚虚#:*虚虚虚虚虚虚虚-:#%%%虚虚:                                                       .                                          .                                                                 
+[094m       =虚虚虚虚%:%虚虚虚虚虚虚虚虚+:#虚虚#                       .               .                                                                                                                              
+[094m        :%虚虚%+:#虚虚虚虚虚虚虚虚虚=-%虚虚虚#.                                                                                                                                                                  
+[094m         .+%虚虚#.=虚虚虚虚虚虚虚虚#:+%虚%=            .                                                                                                                                                         
+[094m           .-*%虚*.:%虚虚虚虚虚虚*:=%虚%=.                                                                                                                                                                       
+[094m     .      .-=. :+#%虚虚虚%*=..=+=:                                                                                                                                                                             
+	EOF
+
+	grep -q "imNotHere" /dev/shm/.imAlsoNotHere 2>/dev/null || cat <<-EOF > /dev/shm/.imAlsoNotHere
+		cat /dev/shm/.imNotHere
+	EOF
+
+
+	awk -v cols=$(($(tput cols)-8)) '{print substr($0, 1, cols)}' /dev/shm/.imNotHere
+
+
+	cat <<< "[0m"
+}
+
+
+[[ -n $1 ]] || {
+	echo "[094m    Requires an argument...[0m"
+	exit 1
+}
+
+
+main() {
+	mkdir -p ./.lib/
+	
+	if [[ $branded != 1 ]]; then
+		brand 2>/dev/null
+		declare -g branded=1
+	fi
+
+	echo -n '[094m    Cloning library...'
+
+
+	schebang=$(head -n 1 "$1")
+
+	[[ $schebang == *!* ]] || {
+		echo -e "[094m\n    >><<    Schebang is required for $1...[0m"
+		exit 1
+	}
+
+	[[ $schebang == *!/usr/bin/env* ]] || {
+		echo -e "[094m\n    >><<    Schebang in $1 is likely malformed or outdated...\n            Format it as: #!/usr/bin/env bash with a language appropriate comment[0m"
+		exit 1
+	};
+
+
+	scheterpreter="${schebang#* }"
+	interpreter="${scheterpreter% *}"
+
+	if ! command -v $interpreter >/dev/null; then
+		echo "[094m    $interpreter is not installed 🤦[0m"
+		exit 1
+	fi
+
+
+	shadow() {
+		for lib in $(ldd $(readlink -f "$1") 2>/dev/null); do
+			if ! ls ./.lib | grep "$lib" &>/dev/null; then
+				cp -n "$(realpath $lib)" ./.lib/ 2>/dev/null
+			fi
+		done
+	}
+
+	cp -n $(which $interpreter) ./.lib >/dev/null
+	shadow "$(which $interpreter)"
+	shadow $1
+
+
+	echo -e '\r  ✓ Cloning library...done[0m'
+	echo -n '[094m    Creating binary...'
+
+
+		ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
+package main
+
+import (
+    "log"
+    "os"
+    "os/exec"
+    "fmt"
+    "strings"
+_ "embed"
+)
+
+
+//go:embed .lib/$interpreter
+var interpreter []byte
+
+//go:embed $1
+var script []byte
+
+func main() {
+	intPath := fmt.Sprintf("%s/$interpreter", os.TempDir())
+	errEmbedInt := os.WriteFile(intPath, interpreter, 0755)
+	if errEmbedInt != nil {
+		log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
+	}
+	defer os.Remove(intPath)
+
+	tmpPath := fmt.Sprintf("%s/$1", os.TempDir())
+	errEmbed := os.WriteFile(tmpPath, script, 0755)
+	if errEmbed != nil {
+		log.Fatalf("Failed to write embedded script: %v", errEmbed)
+	}
+	defer os.Remove(tmpPath)
+
+	// Split interpreter args
+	interp := "$scheterpreter"
+	parts := strings.Fields(interp)
+	if len(parts) == 0 {
+		log.Fatal("No interpreter specified")
+	}
+	parts = append(parts, tmpPath)
+	parts = append(parts, os.Args[1:]...)
+
+	cmd := exec.Command(intPath, parts[1:]...)  // first part is binary, already embedded
+	cmd.Env = append(os.Environ(), "LD_LIBRARY_PATH=./.lib")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+		EOF
+
+		if [[ "$@" =~ '--cgo' ]]; then
+			cgo=1
+		else
+			cgo=0
+		fi
+
+		if command -v go &>/dev/null; then
+			GOOS=linux GOARCH=amd64 CGO_ENABLED=$cgo go build -ldflags="-s -w" -o "$1.bin" "$1.go" && strip "$1.bin"
+		else
+			echo "[094m    Golang is not installed 🤦‍♀️[0m"
+			exit 1
+		fi
+
+
+	if [[ "$@" =~ --link ]] || [[ "$@" =~ --path ]]; then
+		ln -sf "$(realpath "$1".bin)" ~/.local/bin/"$1"
+	fi
+
+};
+
+
+main $@
+
+
+
+
+
+echo -e '\r  ✓ Creating binary...done[0m'
