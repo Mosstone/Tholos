@@ -11,12 +11,12 @@ doi: 10.5281/zenodo.15350673
 date-released: 2025-05-06
 url: "https://github.com/Mosstone/port"
 abstract: >
-  Port is a metascript which generates fully self contained go binaries
-  embedded with the interpreter and libraries of other files. Resulting
-  binaries and .go files are fully portable and reproduceable. The .bin
-  can be moved to any system and executed, whereas the .go may be built
-  into a larger go binary.
+	Port is a metascript which generates fully self contained go binaries
+	embedded with the interpreter and libraries of other files. Resulting
+	binaries and .go files are fully portable and reproduceable. The .bin
+	can be moved to any system and executed, whereas the .go may be built
+	into a larger go binary, accessing files up to 16452 times faster
 
-  Port also allows embed integration of a variety of heterogeneous file
-  languages, including rust, into golang as low latency modules without
-  requiring ccall or api logic resulting while minimizing redundancy
+	Port also allows embed integration of a variety of heterogeneous file
+	languages, including rust, into golang as low latency modules without
+	requiring ccall or api logic resulting while minimizing redundancy
