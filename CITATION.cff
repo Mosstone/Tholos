@@ -20,3 +20,6 @@ abstract: >
   Port also allows embed integration of a variety of heterogeneous file
   languages, including rust, into golang as low latency modules without
   requiring ccall or api logic resulting while minimizing redundancy
+
+  This has significant appliations for HPC, edge processors, low level 
+  systems, and cybersecurity
