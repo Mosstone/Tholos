@@ -18,9 +18,20 @@
         The .go file depends on the ./.lib folder that gets created but the compiler embeds it in the bin
         This utility is language agnostic, automatically embedding the interpreter listed in the schebang
 
+
     Use --link or --path to also add the binary as a command
         use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
         ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
+
+
+    There are two outputs: the compiled .bin executable which is compiled as a fully embedded binary, and
+        the editable .go which the .bin is compiled from. All of the embedded files the go uses is in the
+        .lib folder which is shared for all compiled go outputs in the same directory. So if they are all
+        in the same folder and then included in the same golang compile, the embed would only include one
+        version of the interpreter for all of them. The resulting large binary may then be able to access
+        the embedded files and their interpreters. This was measured to have much faster access times than
+        accessing external files from the compiled golang.
+
 
 		Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
         Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
@@ -29,6 +40,7 @@
 
 
 		Does not work with java, julia, or elixir short of a workaround due to their strict topologies :(
+
 
     Supported languages
 bash
@@ -49,6 +61,7 @@ fortran
 assembly
 elixir
 zig
+
 
     Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
         Anything other than that will not pass the enforcement check
