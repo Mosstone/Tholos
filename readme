@@ -1,0 +1,55 @@
+    Clones libraries and creates a portable compiled wrapper for the target file in the current directory
+
+    Usage:  $ port port-src.sh
+            $ ./myscript.sh.bin <<< Fully portable, libraries and interpreter is included in binary
+            Bonjour Monde
+            $ ls . | grep myscript
+            port-src.sh
+            port-src.sh.go      <<< You can delete this
+            port-src.sh.bin
+
+            $ port "Bonjour" --link
+            $ Bonjour
+            Bonsoir
+            $ Bonjour
+            Bonsoir
+
+    Once generated the binary is fully standalone, whereas the .go can be integrated into golang projects
+        The .go file depends on the ./.lib folder that gets created but the compiler embeds it in the bin
+        This utility is language agnostic, automatically embedding the interpreter listed in the schebang
+
+    Use --link or --path to also add the binary as a command
+        use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
+        ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
+
+		Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
+        Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
+        without the project sliding deeper into rust territory. If you keep all of the rust embedded code
+        in the same file, they will all share the same .lib folder and thus be using the same rust
+
+
+		Does not work with java, julia, or elixir short of a workaround due to their strict topologies :(
+
+    Supported languages
+bash
+javascript
+python
+rust
+ruby
+php
+lua
+haskell
+perl
+scala
+deno
+
+    Unsupported languages
+java
+fortran
+assembly
+elixir
+zig
+
+    Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
+        Anything other than that will not pass the enforcement check
+        You can replace the # with the comment for the language being used, //!/usr/bin/env is also valid
