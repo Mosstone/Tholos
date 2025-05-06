@@ -33,7 +33,7 @@
         accessing external files from the compiled golang, 0.5198ns/op / 8552ns/op so about 16452x faster
 
 
-		Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
+    Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
         Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
         without the project sliding deeper into rust territory. If you keep all of the rust embedded code
         in the same file, they will all share the same .lib folder and thus be using the same rust
