@@ -72,6 +72,8 @@ zig
 [0m'; }
 
 
+verbose='/dev/null'
+quiet='/dev/stdout'
 for flag in "$@"; do
 	case $flag in
 
@@ -152,11 +154,11 @@ main() {
 	mkdir -p ./.lib/
 	
 	if [[ $branded != 1 ]]; then
-		brand 2>/dev/null
+		brand >$quiet
 		declare -g branded=1
 	fi
 
-	echo -n '[094m    Cloning library...'
+	echo -n '[094m    Cloning library...' >$quiet
 
 
 	schebang=$(head -n 1 "$1")
@@ -194,8 +196,8 @@ main() {
 	shadow $1
 
 
-	echo -e '\r  ✓ Cloning library...done[0m'
-	echo -n '[094m    Creating binary...'
+	echo -e '\r  ✓ Cloning library...done[0m' >$quiet
+	echo -n '[094m    Creating binary...' >$quiet
 
 
 		ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
@@ -281,4 +283,4 @@ main $@
 
 
 
-echo -e '\r  ✓ Creating binary...done[0m'
+echo -e '\r  ✓ Creating binary...done[0m' >$quiet
