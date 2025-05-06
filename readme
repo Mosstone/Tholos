@@ -30,7 +30,7 @@
         in the same folder and then included in the same golang compile, the embed would only include one
         version of the interpreter for all of them. The resulting large binary may then be able to access
         the embedded files and their interpreters. This was measured to have much faster access times than
-        accessing external files from the compiled golang.
+        accessing external files from the compiled golang, 0.5198ns/op / 8552ns/op so about 16452x faster
 
 
 		Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
