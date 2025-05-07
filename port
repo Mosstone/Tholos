@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-version='v. 0.1.4'
+version='v. 1.1.7'
 
 
 
@@ -150,8 +150,12 @@ brand() {
 }
 
 
+getlib() { echo ".$(sha512sum <<< $(echo "$PWD$USER"))" | awk '{print $1}'; }
+lib="$(getlib).lib"
+
+
 main() {
-	mkdir -p ./.lib/
+	install -d -m 700 ./$lib
 	
 	if [[ $branded != 1 ]]; then
 		brand >$quiet
@@ -159,6 +163,11 @@ main() {
 	fi
 
 	echo -n '[094m    Cloning library...' >$quiet
+
+
+	eyeprint() {
+		sha512sum <<< "$1$(lsblk -o UUID)$USER$(uname -r)$(lspci)" | awk '{print $1}'
+	}
 
 
 	schebang=$(head -n 1 "$1")
@@ -178,26 +187,31 @@ main() {
 	interpreter="${scheterpreter% *}"
 
 	if ! command -v $interpreter >/dev/null; then
-		echo "[094m    $interpreter is not installed 🤦[0m"
+		echo "[094m    $interpreter is not installed...[0m"
 		exit 1
 	fi
 
 
-	shadow() {
-		for lib in $(ldd $(readlink -f "$1") 2>/dev/null); do
-			if ! ls ./.lib | grep "$lib" &>/dev/null; then
-				cp -n "$(realpath $lib)" ./.lib/ 2>/dev/null
+	shadow() { # I already know
+		for library in $(ldd $(readlink -f "$1") 2>/dev/null); do
+			if ! ls ./$lib | grep "$library" &>/dev/null; then
+				cp -n "$(realpath $library)" ./$lib 2>/dev/null
 			fi
 		done
 	}
 
-	cp -n $(which $interpreter) ./.lib >/dev/null
+	cp -n $(which $interpreter) ./$lib >/dev/null
 	shadow "$(which $interpreter)"
 	shadow $1
 
+	chmod 500 ./$lib/* 2>/dev/null
 
 	echo -e '\r  ✓ Cloning library...done[0m' >$quiet
 	echo -n '[094m    Creating binary...' >$quiet
+
+
+####################################################################################
+### Metascript start ###############################################################
 
 
 		ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
@@ -209,52 +223,59 @@ import (
     "os/exec"
     "fmt"
     "strings"
-_ "embed"
+    _ "embed"
+    "path/filepath"
 )
 
 
-//go:embed .lib/$interpreter
+//go:embed $lib/$interpreter
 var interpreter []byte
 
 //go:embed $1
 var script []byte
 
+
 func main() {
-	intPath := fmt.Sprintf("%s/$interpreter", os.TempDir())
-	errEmbedInt := os.WriteFile(intPath, interpreter, 0755)
-	if errEmbedInt != nil {
-		log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
-	}
-	defer os.Remove(intPath)
+    intPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $interpreter)")
+    os.MkdirAll(filepath.Dir(intPath), 0444)
+    errEmbedInt := os.WriteFile(intPath, interpreter, 0444)
+    if errEmbedInt != nil {
+        log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
+    }
+    // defer os.Remove(intPath)
 
-	tmpPath := fmt.Sprintf("%s/$1", os.TempDir())
-	errEmbed := os.WriteFile(tmpPath, script, 0755)
-	if errEmbed != nil {
-		log.Fatalf("Failed to write embedded script: %v", errEmbed)
-	}
-	defer os.Remove(tmpPath)
+    tmpPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $1)/")
+    os.MkdirAll(filepath.Dir(tmpPath), 0444)
+    errEmbed := os.WriteFile(tmpPath, script, 0444)
+    if errEmbed != nil { log.Fatalf("Failed to write embedded script: %v", errEmbed) }
 
-	// Split interpreter args
-	interp := "$scheterpreter"
-	parts := strings.Fields(interp)
-	if len(parts) == 0 {
-		log.Fatal("No interpreter specified")
-	}
-	parts = append(parts, tmpPath)
-	parts = append(parts, os.Args[1:]...)
+    interp := "$scheterpreter"
+    parts := strings.Fields(interp)
+    if len(parts) == 0 { log.Fatal("No interpreter specified") }
+    parts = append(parts, tmpPath)
+    parts = append(parts, os.Args[1:]...)
 
-	cmd := exec.Command(intPath, parts[1:]...)
-	cmd.Env = append(os.Environ(), "LD_LIBRARY_PATH=./.lib")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+    cmd := exec.Command(intPath, parts[1:]...)
+    cmd.Env = append(os.Environ(), "LD_LIBRARY_PATH=./$lib")
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    cmd.Stdin = os.Stdin
 
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	defer func() {
+		_ = os.Remove(tmpPath)
+	}()
+
+    err := cmd.Run()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
-		EOF
+	EOF
+
+
+### Metascript fin #################################################################
+####################################################################################
+
 
 		if [[ "$@" =~ '--cgo' ]]; then
 			cgo=1
@@ -265,7 +286,7 @@ func main() {
 		if command -v go &>/dev/null; then
 			GOOS=linux GOARCH=amd64 CGO_ENABLED=$cgo go build -ldflags="-s -w" -o "$1.bin" "$1.go" && strip "$1.bin"
 		else
-			echo "[094m    Golang is not installed 🤦‍♀️[0m"
+			echo "[094m    Golang is not installed...[0m"
 			exit 1
 		fi
 
