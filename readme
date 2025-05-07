@@ -66,4 +66,5 @@ zig
 
     Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
         Anything other than that will not pass the enforcement check
-        Port doesn't match before the ! so you can replace the # with // or ; etc depending on the language
+        Port doesn't match before the ! so you can replace the # with the appropriate comment for the language
+        such as for rust // or ; for ... something probably
