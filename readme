@@ -45,9 +45,10 @@
 
     Supported languages
 bash
-javascript
+matlab
 python
 rust
+javascript
 ruby
 php
 lua
