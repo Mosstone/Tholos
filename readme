@@ -33,29 +33,50 @@
         accessing external files from the compiled golang, 0.5198ns/op / 8552ns/op so about 16452x faster
 
 
+    Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
+        Port begins matching after the ! so you can use other comments such as // or % if there is ever a
+        requirement. Anything other than that i.e. /usr/bin/bash will not pass the enforcement check.
+
+
     Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
         Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
         without the project sliding deeper into rust territory. If you keep all of the rust embedded code
         in the same file, they will all share the same .lib folder and thus be using the same rust
 
 
-    Does not work with java, julia, or elixir short of a workaround due to their strict topologies :(
-        todo material
+    Does not work with java, julia, or elixir currently due to their strict topologies :(
 
+
+    Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
+        original environment. This works well with anaconda and miniforge. I expected that the binary will
+        need to be regenerated anyway due to security patches, so at least this way it means only updating
+        the interpreter every few decades rather than regenerating all 1354356 port files every month then
+        figuring out which one exploded
+
+    If you really need static module versions, you could use an anaconda/miniforge environment (which the
+        binaries will then use). Generated binaries will use the module paths of the active environment
+        The system version of the interpreter at that point can change without affecting the port files
+
+
+    Embedded files are written to /dev/shm/ and obfuscated using a hash of the name+user. Therefore there
+        is no possibility of collisions from different users, and the paths are not obvious to a listener
+        The temporary files are deleted after execution, also preventing collisions if different versions
+        of the same file is run, and the 
+        
 
     Supported languages
 bash
-matlab
 python
-rust
+rust-script
+perl
 javascript
 ruby
 php
 lua
 haskell
-perl
 scala
 deno
+matlab (I think? it works with octave)
 
     Unsupported languages
 java
@@ -64,7 +85,8 @@ assembly
 elixir
 zig
 
+TODO
+    encrypt temporary files
+    compile time rng tag to further reduce collisions
+    move out of /dev/shm/ due to rising property values
 
-    Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
-        Anything other than that will not pass the enforcement check
-        Port doesn't match before the ! so you can use comments, such as // or % if that is ever required
