@@ -92,3 +92,7 @@ TODO
     compile time rng tag to further reduce collisions
     move out of /dev/shm/ due to rising property values
 
+
+If this code is used in a publication or in a system which is used in a publication, please cite the following:
+    **Buerer, Daniel** (2025). *port* (Version 1.1) [Computer software]. https://doi.org/10.5281/zenodo.15350673
+or reference the citation.cff for standard format information
