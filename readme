@@ -29,8 +29,7 @@
         .lib folder which is shared for all compiled go outputs in the same directory. So if they are all
         in the same folder and then included in the same golang compile, the embed would only include one
         version of the interpreter for all of them. The resulting large binary may then be able to access
-        the embedded files and their interpreters. This was measured to have much faster access times than
-        accessing external files from the compiled golang, 0.5198ns/op / 8552ns/op so about 16452x faster
+        the embedded files and their interpreters
 
 
     Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
