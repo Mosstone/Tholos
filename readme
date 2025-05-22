@@ -58,10 +58,15 @@
         The system version of the interpreter at that point can change without affecting the port files
 
 
-    Embedded files are written to /dev/shm/ and obfuscated using a hash of the name+user. Therefore there
-        is no possibility of collisions from different users, and the paths are not obvious to a listener
-        The temporary files are deleted after execution, also preventing collisions if different versions
-        of the same file is run, and the 
+    Only the interpreter is saved to the memory filesystem, the embedded file itself is then loaded into
+        the interpreter directly
+
+    For developers, there are some functions sealMake() and sealBreak() which creates a scoped nonce and
+        destroys the it afterwards. The key is hard coded into the binary and is generated at build time
+        (but not compile time unless you regenerate the module). The nonce is created when the module is
+        invoked and then is discarded when used. This can be used to encrypt and decrypt files the embed
+        creates. If you really need to decrypt multiple files, you'll need to shadow the nonce before it
+        is discarded following sealBreak()
         
 
     Supported languages
