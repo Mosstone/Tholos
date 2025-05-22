@@ -37,13 +37,13 @@ printhelp() { echo '[094m
         use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
         ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
 
-		Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
+        Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
         Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
         without the project sliding deeper into rust territory. If you keep all of the rust embedded code
         in the same file, they will all share the same .lib folder and thus be using the same rust
 
 
-		Does not work with java, julia, or elixir short of a workaround due to their strict topologies :(
+        Does not work with java, julia, or elixir short of a workaround due to their strict topologies :(
 
     Supported languages
 bash
@@ -214,6 +214,9 @@ main() {
 ### Metascript start ###############################################################
 
 
+SealKey=$(openssl rand -hex 32)
+
+
 		ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
 package main
 
@@ -225,8 +228,12 @@ import (
     "strings"
     _ "embed"
     "path/filepath"
-)
 
+    "crypto/rand"
+    "crypto/cipher"
+    "crypto/aes"
+    "encoding/hex"
+)
 
 //go:embed $lib/$interpreter
 var interpreter []byte
@@ -235,39 +242,100 @@ var interpreter []byte
 var script []byte
 
 
+const hexKey = "$SealKey"
+
+
+func sealNonce() []byte {
+
+    rng := make([]byte, 12)
+    _, err := rand.Read(rng)
+    if err != nil { log.Fatalf("Failed to create nonce: %v", err) }
+    return rng
+
+}
+
+
+// var RuntimeNonce = sealNonce()
+//      Uncomment to expose a nonce which can be used to encrypt ephemeral files used by the embed or its outputs. 
+//      A new nonce is created each time the embed is executed.
+//      Follow with this line to ensure the nonce is not accidentally reused:
+//      for i := range runtimeNonce { runtimeNonce[i] = 0 }
+
+
+func sealMake(plaintext []byte) ([]byte, error) {
+
+    key, err := hex.DecodeString(hexKey)
+        if err != nil { log.Fatalf("Failed to transbobulate keys: %v", err) }
+
+    block, err := aes.NewCipher(key)
+        if err != nil { return nil, err }
+
+    gcm, err := cipher.NewGCM(block)
+        if err != nil { return nil, err }
+
+    nonce := sealNonce()
+    ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
+    return ciphertext, nil
+
+}
+
+
+func sealBreak(ciphertext []byte) ([]byte, error) {
+
+    if len(ciphertext) < 12 { return nil, fmt.Errorf("ciphertext too short") }
+    key, err := hex.DecodeString(hexKey)
+        if err != nil { log.Fatalf("Failed to transbobulate keys: %v", err) }
+
+    nonce := ciphertext[:12]
+    	defer func() { for i := range nonce { nonce[i] = 0 } }()
+
+    ciphertext = ciphertext[12:]
+    block, err := aes.NewCipher(key)
+        if err != nil { return nil, err }
+
+    gcm, err := cipher.NewGCM(block)
+        if err != nil { return nil, err }
+
+    return gcm.Open(nil, nonce, ciphertext, nil)
+
+}
+
+
 func main() {
+
     intPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $interpreter)")
     os.MkdirAll(filepath.Dir(intPath), 0755)
     errEmbedInt := os.WriteFile(intPath, interpreter, 0755)
-    if errEmbedInt != nil {
-        log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
-    }
-
-    tmpPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $1)/")
-    os.MkdirAll(filepath.Dir(tmpPath), 0755)
-    errEmbed := os.WriteFile(tmpPath, script, 0755)
-    if errEmbed != nil { log.Fatalf("Failed to write embedded script: %v", errEmbed) }
+        if errEmbedInt != nil { log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt) }
 
     interp := "$scheterpreter"
     parts := strings.Fields(interp)
-    if len(parts) == 0 { log.Fatal("No interpreter specified") }
-    parts = append(parts, tmpPath)
+    parts = append(parts, "-s")
     parts = append(parts, os.Args[1:]...)
 
     cmd := exec.Command(intPath, parts[1:]...)
     cmd.Env = append(os.Environ(), "LD_LIBRARY_PATH=./$lib")
     cmd.Stdout = os.Stdout
     cmd.Stderr = os.Stderr
-    cmd.Stdin = os.Stdin
 
-	defer func() {
-		_ = os.Remove(tmpPath)
-	}()
+    // Provide the embedded script directly to stdin
+    stdinPipe, err := cmd.StdinPipe()
+    if err != nil { log.Fatalf("Failed to create stdin pipe: %v", err) }
 
-    err := cmd.Run()
-    if err != nil {
-        log.Fatal(err)
-    }
+    // Start the interpreter
+    if err := cmd.Start(); err != nil { log.Fatalf("Failed to start interpreter: %v", err) }
+
+    // Stream script to interpreter
+    _, err = stdinPipe.Write(script)
+        if err != nil { log.Fatalf("Failed to write script to interpreter stdin: %v", err) }
+
+    stdinPipe.Close()
+
+    err = cmd.Wait()
+        if err != nil { log.Fatal(err) }
+
+    for i := range interpreter { interpreter[i] = 0 }
+    for i := range script { script[i] = 0 }
 }
 	EOF
 
@@ -291,6 +359,7 @@ func main() {
 
 
 	if [[ "$@" =~ --link ]] || [[ "$@" =~ --path ]]; then
+		mkdir -p ~/.local/bin/
 		ln -sf "$(realpath "$1".bin)" ~/.local/bin/"$1"
 	fi
 
