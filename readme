@@ -34,7 +34,7 @@
 
     Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
         Port begins matching after the ! so you can use other comments such as // or % if there is ever a
-        requirement. Anything other than that i.e. /usr/bin/bash will not pass the enforcement check.
+        requirement. Anything other than that i.e. /usr/bin/bash will not pass the enforcement check
 
 
     Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
@@ -49,8 +49,9 @@
     Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
         original environment. This works well with anaconda and miniforge. I expected that the binary will
         need to be regenerated anyway due to security patches, so at least this way it means only updating
-        the interpreter every few decades rather than regenerating all 1354356 port files every month then
-        figuring out which one exploded
+        the interpreter every few decades rather than regenerating every port module. For most purposes it
+        should remain portable so long as the interpreter modules are present and compatible with the port
+        installed version of the interpreter
 
     If you really need static module versions, you could use an anaconda/miniforge environment (which the
         binaries will then use). Generated binaries will use the module paths of the active environment
