@@ -53,7 +53,7 @@
         should remain portable so long as the interpreter modules are present and compatible with the port
         installed version of the interpreter
 
-    If you really need static module versions, you could use an anaconda/miniforge environment (which the
+    If you really need static module versions, you can use an anaconda/miniforge environment (which the
         binaries will then use). Generated binaries will use the module paths of the active environment
         The system version of the interpreter at that point can change without affecting the port files
 
@@ -67,12 +67,15 @@
         invoked and then is discarded when used. This can be used to encrypt and decrypt files the embed
         creates. If you really need to decrypt multiple files, you'll need to shadow the nonce before it
         is discarded following sealBreak()
+            By default the encryption is only for obfuscation, if you want proper security you can add a
+            tpm using the commented out sealKey function. Otherwise the key cannot be securely stored in
+            a module. Set the hexKey variable to an external key to secure the system
         
 
     Supported languages
 bash
 python
-rust-script
+rust    (via rust-script)
 perl
 R
 javascript
@@ -82,19 +85,16 @@ lua
 haskell
 scala
 deno
-matlab (I think? it works with octave)
+matlab    (via octave)
 wolfram
 
     Unsupported languages
 java
-fortran
-assembly
 elixir
 zig
+assembly
 
 TODO
-    encrypt temporary files
-    compile time rng tag to further reduce collisions
     move out of /dev/shm/ due to rising property values
 
 
