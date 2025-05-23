@@ -3,15 +3,15 @@
 Usage:      $ cat Bonjour.py 
             #!/usr/bin/env python
             print("Coucou")
-            $ port Bonjour.py --quiet
+            $ thol Bonjour.py --quiet
             $ ./Bonjour.py.bin  <<<    The active version of python is included in the binary. This can be moved anywhere, but if the python uses imports the new system will need to have those imports as well
             Coucou
 
-            $ ./port port --link
-            $ port wunder --quiet; ls . | grep wunder
+            $ ./port thol --link
+            $ thol wunder --quiet; ls . | grep wunder
             wunder              <<<    Keep if you're importing the .go module; it references the original at compile time and they must be in the same directory location
             wunder.go           <<<    Only keep if you're importing into a larger go binary, this is a usable module which fully includes the code at compile time
-            wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the port code is becoming a module
+            wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the thol code is becoming a module
                                         which has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
 
 
@@ -33,34 +33,34 @@ Usage:      $ cat Bonjour.py
 
 
     Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
-        Port begins matching after the ! so you can use other comments such as // or % if there is ever a
+        thol begins matching after the ! so you can use other comments such as // or % if there is ever a
         requirement. Anything other than that will not pass the enforcement check. Yes, this includes the
         /usr/bin/bash schebang that you've been using
 
 
     Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
-        Notably, using rust-script allows port to embed rust code into a go binary and rust code normally
+        Notably, using rust-script allows thol to embed rust code into a go binary and rust code normally
         without the project spiralling deeper into the rust miasma. For any given language embedded using
         this utility, the interpreters will share an interpreter cache, so long as they share a directory
 
     Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
         original environment. This works well with anaconda and miniforge. I expected that the binary will
         need to be regenerated anyway due to security patches, so at least this way it means only updating
-        the interpreter every few decades rather than regenerating every port module. For most purposes it
+        the interpreter every few decades rather than regenerating every thol module. For most purposes it
         should remain portable so long as the interpreter modules are present and compatible with the port
         installed version of the interpreter
 
     If you really need static module versions, you can use an anaconda/miniforge environment (which the
         binaries will then use). Generated binaries will use the module paths of the active environment
-        The system version of the interpreter at that point can change without affecting the port files
+        The system version of the interpreter at that point can change without affecting the thol files
 
     Only the interpreter is saved to the memory filesystem, the embedded file itself is then loaded into
-        the interpreter directly. For most languages, port follows a zero copy pattern where the scripts
+        the interpreter directly. For most languages, thol follows a zero copy pattern where the scripts
         are passed into the buffer, but for certain languages (rust) this does not appear to be feasible
         so they use a written copy of the code instead which is discarded after execution by default
             When a file is written, it uses the same logic as the interpreter files, avoiding collisions
             by occupying a namespace derived from the current environment and namespace. Thus, two users
-            or containers both using the same port on the same machine have their own copies of any file
+            or containers both using the same thol on the same machine have their own copies of any file
             created by the module
 
     For developers, there are some functions sealMake() and sealBreak() which creates a scoped nonce and
