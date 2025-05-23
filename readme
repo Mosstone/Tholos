@@ -1,28 +1,23 @@
     Clones libraries and creates a portable compiled wrapper for the target file in the current directory
 
-    Usage:  $ port port-src.sh
-            $ ./myscript.sh.bin <<< Fully portable, libraries and interpreter is included in binary
-            Bonjour Monde
-            $ ls . | grep myscript
-            port-src.sh
-            port-src.sh.go      <<< You can delete this
-            port-src.sh.bin
+Usage:      $ cat Bonjour.py 
+            #!/usr/bin/env python
+            print("Coucou")
+            $ port Bonjour.py --quiet
+            $ ./Bonjour.py.bin  <<<    The active version of python is included in the binary. This can be moved anywhere, but if the python uses imports the new system will need to have those imports as well
+            Coucou
 
-            $ port "Bonjour" --link
-            $ Bonjour
-            Bonsoir
-            $ Bonjour
-            Bonsoir
-
-    Once generated the binary is fully standalone, whereas the .go can be integrated into golang projects
-        The .go file depends on the ./.lib folder that gets created but the compiler embeds it in the bin
-        This utility is language agnostic, automatically embedding the interpreter listed in the schebang
+            $ ./port port --link
+            $ port wunder --quiet; ls . | grep wunder
+            wunder              <<<    Keep if you're importing the .go module; it references the original at compile time and they must be in the same directory location
+            wunder.go           <<<    Only keep if you're importing into a larger go binary, this is a usable module which fully includes the code at compile time
+            wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the port code is becoming a module
+                                        which has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
 
 
-    Use --link or --path to also add the binary as a command
-        use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
-        ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
-
+    Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
+        The .go file depends on the /.lib folder that gets created but the compiler embeds it in the bin.
+        This utility is language agnostic, automatically embedding the interpreter stated in the schebang
 
     There are two outputs: the compiled .bin executable which is compiled as a fully embedded binary, and
         the editable .go which the .bin is compiled from. All of the embedded files the go uses is in the
@@ -32,19 +27,21 @@
         the embedded files and their interpreters
 
 
+    Use --link or --path to also add the binary as a command, creating a symlink at the present directory
+        use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
+        ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
+
+
     Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
         Port begins matching after the ! so you can use other comments such as // or % if there is ever a
-        requirement. Anything other than that i.e. /usr/bin/bash will not pass the enforcement check
+        requirement. Anything other than that will not pass the enforcement check. Yes, this includes the
+        /usr/bin/bash schebang that you've been using
 
 
     Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
-        Most notably, using rust-script allows you to embed rust projects into a golang binary and use it
-        without the project sliding deeper into rust territory. If you keep all of the rust embedded code
-        in the same file, they will all share the same .lib folder and thus be using the same rust
-
-
-    Does not work with java, julia, or elixir currently due to their strict topologies :(
-
+        Notably, using rust-script allows port to embed rust code into a go binary and rust code normally
+        without the project spiralling deeper into the rust miasma. For any given language embedded using
+        this utility, the interpreters will share an interpreter cache, so long as they share a directory
 
     Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
         original environment. This works well with anaconda and miniforge. I expected that the binary will
@@ -57,9 +54,14 @@
         binaries will then use). Generated binaries will use the module paths of the active environment
         The system version of the interpreter at that point can change without affecting the port files
 
-
     Only the interpreter is saved to the memory filesystem, the embedded file itself is then loaded into
-        the interpreter directly
+        the interpreter directly. For most languages, port follows a zero copy pattern where the scripts
+        are passed into the buffer, but for certain languages (rust) this does not appear to be feasible
+        so they use a written copy of the code instead which is discarded after execution by default
+            When a file is written, it uses the same logic as the interpreter files, avoiding collisions
+            by occupying a namespace derived from the current environment and namespace. Thus, two users
+            or containers both using the same port on the same machine have their own copies of any file
+            created by the module
 
     For developers, there are some functions sealMake() and sealBreak() which creates a scoped nonce and
         destroys the it afterwards. The key is hard coded into the binary and is generated at build time
@@ -94,8 +96,12 @@ elixir
 zig
 assembly
 
+
+    Does not work with java, julia, or elixir currently due to their strict structures :(
+
 TODO
     move out of /dev/shm/ due to rising property values
+    enable unsupported languages
 
 
 If this code is used in a publication or in a system which is used in a publication, please cite the following:
