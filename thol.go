@@ -20,7 +20,7 @@ _ "embed"
 //go:embed .ac69eb468be056345d424e469b2139e7420615a26576bfbd09147404ccfb832b197b16f644010f2f17b041a758d0861f12425fcfdb2447bad01c7e9f9cd01bed.lib/bash
 var interpreter []byte
 
-//go:embed port
+//go:embed thol
 var script []byte
 
 // This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
