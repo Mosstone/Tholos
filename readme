@@ -1,4 +1,4 @@
-    Clones libraries and creates a portable compiled wrapper for the target file in the current directory
+            Tholos embeds executable modules in iterative languages, creating portable Go modules and compiled binaries
 
 Usage:      $ cat Bonjour.py 
             #!/usr/bin/env python
@@ -97,7 +97,7 @@ zig
 assembly
 
 
-    Does not work with java, julia, or elixir currently due to their strict structures :(
+    Does not currently work with java, julia, or elixir due to their strict structures :(
 
 TODO
     move out of /dev/shm/ due to rising property values
@@ -105,6 +105,6 @@ TODO
 
 
 If this code is used in a publication or in a system which is used in a publication, please cite the following:
-    **Buerer, Daniel** (2025). *port* (Version 1.1) [Computer software].
+    **Buerer, Daniel** (2025). *Tholos* (Version 1.2) [Computer software].
     https://doi.org/10.5281/zenodo.15350673
 or reference the citation.cff for standard format information
