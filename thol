@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 1.2.0c'
+version='v. 1.2.1'
 
 
 # Copyright 2025 Daniel Buerer
@@ -244,6 +244,14 @@ case "$interpreter" in
 
     wolframscript)
         CmdFlags+=("-file")
+    ;;
+
+    make)
+        CmdFlags+=("-f")
+    ;;
+
+    luatex)
+        CmdFlags+=("--luaonly")
     ;;
 
     *)
@@ -509,7 +517,7 @@ func main() {
 	//  if executed outside of an embed, subject to aes encryption standards.
 	var needsFile bool
 	switch interp {
-	case "rust-script", "deno", "Rscript", "scala", "wolframscript":
+	case "rust-script", "deno", "Rscript", "scala", "wolframscript", "racket", "luatex":
 		needsFile = true
 	default:
 		needsFile = false

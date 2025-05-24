@@ -42,7 +42,7 @@ var script []byte
 // This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
 // Changing the hexKey value to a tpm provided key and commenting this line would result in a fully compliant system
 // This is intended to be obfuscation, not security. If security is needed comment this and use the function instead
-const hexKey = "21ac8479ccd310846dfa19814ecb332d6585a8cb19e6b0a2f2fdf24f05a360d0"
+const hexKey = "642215b24b08bedae32760862760a8ac2b0755a70c8a2922319ca5c1a771f46d"
 
 // func sealKey(device, file string) (string, error) {
 //     rwc, err := tpm2.OpenTPM(device)
@@ -241,7 +241,7 @@ parts = append(parts, os.Args[1:]...)
 //  if executed outside of an embed, subject to aes encryption standards.
 var needsFile bool
 switch interp {
-case "rust-script", "deno", "Rscript", "scala", "wolframscript":
+case "rust-script", "deno", "Rscript", "scala", "wolframscript", "racket", "luatex":
 needsFile = true
 default:
 needsFile = false
