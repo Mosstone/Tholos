@@ -43,6 +43,12 @@ Usage:      $ cat Bonjour.py
         without the project spiralling deeper into the rust miasma. For any given language embedded using
         this utility, the interpreters will share an interpreter cache, so long as they share a directory
 
+    Now also able to create latex files with luatex embedded. Just use #!/usr/bin/env luatex, followed by
+        valid lua to create automated latex generation. If incorporated into scientific applications this
+        could create a powerful way to create and maintain latex. If placed imported by a go based mpi it
+        would be able to document all the data passing through it into latex, making this Tholos valuable
+        for scientific and machine learning for capturing and visualizing data
+
     Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
         original environment. This works well with anaconda and miniforge. I expected that the binary will
         need to be regenerated anyway due to security patches, so at least this way it means only updating
