@@ -1,8 +1,23 @@
 #!/usr/bin/env bash
 #/*
 
-echo test
-version='v. 1.2.0'
+
+version='v. 1.2.0b'
+
+
+# Copyright 2025 Daniel Buerer
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 
@@ -12,7 +27,7 @@ version='v. 1.2.0'
 printhelp() { echo '[094m
     Clones libraries and creates a portable compiled wrapper for the target file in the current directory
 
-    Usage:  $ thol port-src.sh
+    Usage:  $ port port-src.sh
             $ ./myscript.sh.bin <<< Fully portable, libraries and interpreter is included in binary
             Bonjour Monde
             $ ls . | grep myscript
@@ -20,7 +35,7 @@ printhelp() { echo '[094m
             port-src.sh.go      <<< You can delete this
             port-src.sh.bin
 
-            $ thol "Bonjour" --link
+            $ port "Bonjour" --link
             $ Bonjour
             Bonsoir
             $ Bonjour
@@ -249,6 +264,22 @@ SealKey=$(openssl rand -hex 32)
         ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
 package main
 
+
+// Copyright 2025 Daniel Buerer
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
 import (
 	_ "embed"
 	"fmt"
@@ -365,9 +396,9 @@ func sealNonce() []byte {
 // Encrypt a plaintext as byte input, which can be decrypted with sealBreak
 // The key is stored in the binary created when this module was built, thus any encrypted keys can only be decrypted
 // by binaries which use this specific module as an import. Built modules could be used for a form of key management
-// controlling scope by which binaries import the same thol modules. Since several modules may be used for different
+// controlling scope by which binaries import the same port modules. Since several modules may be used for different
 // binaries, it may not immediately obvious to an outside observer which modules are being used as a key group since
-// a thol copy of an innocent file, or even different versions of the same module, can be used for binaries to share
+// a port copy of an innocent file, or even different versions of the same module, can be used for binaries to share
 // the same module keys and be able to decrypt each other's messages built through that module.
 func sealMake(plaintext []byte) ([]byte, error) {
 
