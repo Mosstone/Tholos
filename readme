@@ -89,6 +89,9 @@ scala
 deno
 matlab    (via octave)
 wolfram
+tcl
+rexx
+scheme    (via racket)
 
     Unsupported languages
 java
