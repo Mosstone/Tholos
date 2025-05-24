@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 1.2.0b'
+version='v. 1.2.0c'
 
 
 # Copyright 2025 Daniel Buerer
@@ -240,6 +240,10 @@ case "$interpreter" in
 
     deno)
         CmdFlags+=("run")
+    ;;
+
+    wolframscript)
+        CmdFlags+=("-file")
     ;;
 
     *)
@@ -505,7 +509,7 @@ func main() {
 	//  if executed outside of an embed, subject to aes encryption standards.
 	var needsFile bool
 	switch interp {
-	case "rust-script", "deno", "Rscript", "scala":
+	case "rust-script", "deno", "Rscript", "scala", "wolframscript":
 		needsFile = true
 	default:
 		needsFile = false
