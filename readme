@@ -12,12 +12,13 @@ Usage:      $ cat Bonjour.py
             wunder              <<<    Keep if you're importing the .go module; it references the original at compile time and they must be in the same directory location
             wunder.go           <<<    Only keep if you're importing into a larger go binary, this is a usable module which fully includes the code at compile time
             wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the thol code is becoming a module
-                                        which has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
+                                           This has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
 
 
     Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
         The .go file depends on the /.lib folder that gets created but the compiler embeds it in the bin.
         This utility is language agnostic, automatically embedding the interpreter stated in the schebang
+
 
     There are two outputs: the compiled .bin executable which is compiled as a fully embedded binary, and
         the editable .go which the .bin is compiled from. All of the embedded files the go uses is in the
@@ -43,6 +44,7 @@ Usage:      $ cat Bonjour.py
         without the project spiralling deeper into the rust miasma. For any given language embedded using
         this utility, the interpreters will share an interpreter cache, so long as they share a directory
 
+
     Now also able to create latex files with luatex embedded. Just use #!/usr/bin/env luatex, followed by
         valid lua to create automated latex generation. If incorporated into scientific applications this
         could create a powerful way to create and maintain latex. If placed imported by a go based mpi it
@@ -52,6 +54,7 @@ Usage:      $ cat Bonjour.py
             and I measured it at ~19MS compared to 100-200MS for other latex solutions, and Tholos shares
             interpreters if multiples are imported in the same go binary
 
+
     Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
         original environment. This works well with anaconda and miniforge. I expected that the binary will
         need to be regenerated anyway due to security patches, so at least this way it means only updating
@@ -59,9 +62,14 @@ Usage:      $ cat Bonjour.py
         should remain portable so long as the interpreter modules are present and compatible with the port
         installed version of the interpreter
 
-    If you really need static module versions, you can use an anaconda/miniforge environment (which the
-        binaries will then use). Generated binaries will use the module paths of the active environment
-        The system version of the interpreter at that point can change without affecting the thol files
+    Note that while the interpreter is embedded in the binary, libraries are loaded from the environment
+        so that binaries with Tholos modules will inherit security updates, without needing to recompile
+        with each library update. This works will with conda envs, when a go binary is executed from one
+        the pinned dependencies are used by thol modules over systemwide dependencies. Therefore you can
+        update with mamba and safely version the environments without recompiling anything. In container
+        applicataions I suggest using miniforge inside the container to manage it with mamba rather than
+        installing dependencies directly to the container
+
 
     Only the interpreter is saved to the memory filesystem, the embedded file itself is then loaded into
         the interpreter directly. For most languages, thol follows a zero copy pattern where the scripts
@@ -71,6 +79,10 @@ Usage:      $ cat Bonjour.py
             by occupying a namespace derived from the current environment and namespace. Thus, two users
             or containers both using the same thol on the same machine have their own copies of any file
             created by the module
+
+            currently, the following interpreters are written tmpfs:
+                "rust-script", "luatex", "deno", "Rscript", "scala", "wolframscript", "racket"
+
 
     For developers, there are some functions sealMake() and sealBreak() which creates a scoped nonce and
         destroys the it afterwards. The key is hard coded into the binary and is generated at build time
