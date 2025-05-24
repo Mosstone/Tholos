@@ -1,5 +1,21 @@
 package main
 
+
+// Copyright 2025 Daniel Buerer
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
 import (
 _ "embed"
 "fmt"
@@ -26,7 +42,7 @@ var script []byte
 // This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
 // Changing the hexKey value to a tpm provided key and commenting this line would result in a fully compliant system
 // This is intended to be obfuscation, not security. If security is needed comment this and use the function instead
-const hexKey = "25cacca8fa5959e063a71c7ac4db80a2147602bd7da23e6811107dd75fd0b1d2"
+const hexKey = "d6995bad90ffae09250a688f9bde21df179f76934aaec615df0243e514059b69"
 
 // func sealKey(device, file string) (string, error) {
 //     rwc, err := tpm2.OpenTPM(device)
@@ -234,7 +250,7 @@ needsFile = false
 var tmpPath string
 if needsFile {
 
-        tmpPath = fmt.Sprintf("%s/b9260a9ea7b698db16fa4b517cdbf3ee637fd101a3f424bd5eaf0ec770ecf119", "/dev/shm/.b9260a9ea7b698db16fa4b517cdbf3ee637fd101a3f424bd5eaf0ec770ecf119/")
+        tmpPath = fmt.Sprintf("%s/a2852d44ef57c16aa0bde6e9ab55851c595bd5b9b0a31628451bf125ca60df14", "/dev/shm/.a2852d44ef57c16aa0bde6e9ab55851c595bd5b9b0a31628451bf125ca60df14/")
 os.MkdirAll(filepath.Dir(tmpPath), 0755)
 
 if err := os.WriteFile(tmpPath, script, 0755); err != nil {
