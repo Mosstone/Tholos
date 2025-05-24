@@ -48,6 +48,9 @@ Usage:      $ cat Bonjour.py
         could create a powerful way to create and maintain latex. If placed imported by a go based mpi it
         would be able to document all the data passing through it into latex, making this Tholos valuable
         for scientific and machine learning for capturing and visualizing data
+            Notably, the luatex binary module is 8MB, compared to hundreds of MB for other latex installs
+            and I measured it at ~19MS compared to 100-200MS for other latex solutions, and Tholos shares
+            interpreters if multiples are imported in the same go binary
 
     Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
         original environment. This works well with anaconda and miniforge. I expected that the binary will
