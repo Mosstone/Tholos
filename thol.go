@@ -42,7 +42,7 @@ var script []byte
 // This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
 // Changing the hexKey value to a tpm provided key and commenting this line would result in a fully compliant system
 // This is intended to be obfuscation, not security. If security is needed comment this and use the function instead
-const hexKey = "642215b24b08bedae32760862760a8ac2b0755a70c8a2922319ca5c1a771f46d"
+const hexKey = "3d8a1ecdb00179114e6235770f23ab1bc00d156d365ab3ff7d4965db4d16ca1a"
 
 // func sealKey(device, file string) (string, error) {
 //     rwc, err := tpm2.OpenTPM(device)
@@ -132,9 +132,9 @@ return rng
 // Encrypt a plaintext as byte input, which can be decrypted with sealBreak
 // The key is stored in the binary created when this module was built, thus any encrypted keys can only be decrypted
 // by binaries which use this specific module as an import. Built modules could be used for a form of key management
-// controlling scope by which binaries import the same port modules. Since several modules may be used for different
+// controlling scope by which binaries import the same thol modules. Since several modules may be used for different
 // binaries, it may not immediately obvious to an outside observer which modules are being used as a key group since
-// a port copy of an innocent file, or even different versions of the same module, can be used for binaries to share
+// a thol copy of an innocent file, or even different versions of the same module, can be used for binaries to share
 // the same module keys and be able to decrypt each other's messages built through that module.
 func sealMake(plaintext []byte) ([]byte, error) {
 
@@ -241,7 +241,7 @@ parts = append(parts, os.Args[1:]...)
 //  if executed outside of an embed, subject to aes encryption standards.
 var needsFile bool
 switch interp {
-case "rust-script", "deno", "Rscript", "scala", "wolframscript", "racket", "luatex":
+case "rust-script", "deno", "Rscript", "scala", "wolframscript", "racket", "luatex", "make":
 needsFile = true
 default:
 needsFile = false
