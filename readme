@@ -44,6 +44,14 @@ Usage:      $ cat Bonjour.py
         without the project spiralling deeper into the rust miasma. For any given language embedded using
         this utility, the interpreters will share an interpreter cache, so long as they share a directory
 
+    Tholos can now be used for build files, embedding make ninja and meson. It uses the schebang like for
+        everything else, so as long as it starts with "#!/usr/bin/env make|ninja|meson", it can be turned
+        into a thol module and executed like any other file. Note ninja and meson support zero copy embed
+        but make requires the tmpfs file to be written. This shouldn't affect anything but ninja+meson is
+        still a natural fit
+            These build methods would allow for dynamic executable builds, simplifying deployment, making
+            metaprogramming versatile and accessible invokable where shell and scripting is not available
+
 
     Now also able to create latex files with luatex embedded. Just use #!/usr/bin/env luatex, followed by
         valid lua to create automated latex generation. If incorporated into scientific applications this
