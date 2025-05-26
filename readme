@@ -61,6 +61,15 @@ Usage:      $ cat Bonjour.py
             type "git clone my/project; ~/project/install.bin" instead of figuring out which build method
             was used for the project and hoping that it works
 
+
+    Tholos can be used with ansible and terraform to create scripts in an executable format if they start
+        with the valid schebang. Further usage is straightforward, and identical to terraform and ansible
+        run normally using the cli commands. You can adjust run flags altering the .go file, but it needs
+        to execute on its own without user interactions. The -auto-approve flag in terraform is therefore
+        non optional but everything else is adjustable with the parts = append(parts, "<arg>") line
+            Refer to the included script examples for minimal forms of each
+
+
     Now also able to create latex files with luatex embedded. Just use #!/usr/bin/env luatex, followed by
         valid lua to create automated latex generation. If incorporated into scientific applications this
         could create a powerful way to create and maintain latex. If placed imported by a go based mpi it
@@ -97,7 +106,7 @@ Usage:      $ cat Bonjour.py
             created by the module
 
             currently, the following interpreters are written tmpfs:
-                "rust-script", "luatex", "deno", "Rscript", "scala", "wolframscript", "racket"
+                "rust-script", "luatex", "deno", "Rscript", "scala", "wolframscript", "racket", "make"
 
 
     For developers, there are some functions sealMake() and sealBreak() which creates a scoped nonce and
