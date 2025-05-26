@@ -140,25 +140,32 @@ ruby
 php
 lua
 luatex
-haskell   (via runghc)
 scala
 deno
 matlab    (via octave)
-wolfram
-tcl
-rexx
-scheme    (via racket)
+wolfram                             | Hugs also works if you use a second file with about 0.1 times the latenxy of runghc
+tcl                                 | For this you would need an orchestrator file which you compile with thol. If you're
+rexx                                | writing output to memory or to disk, it's worth considering. The orchestrator would
+scheme    (via racket)              | have the interpreter embedded, but you would need to have the haskell code embedded
+haskell   (via runghc)           << | manually or have it statically reference a .hs in the same location as the thol bin
+                                    |     This is because hugs is an actual interpreter whereas runghc is just a compiler
+                                    |     that runs JIT when you execute, which is fine for long running applications but
+                                    |     highly ineffecient for executables. It's unlikely to ever be used, but there is
+                                    |     a demonstration in the examples folder nontheless. I suggest connecting hugs to
+                                    |     a long running haskell process via shared memory of stdin, allowing low latency
+                                    |     manipulation with modular inputs. This could become a very efficient method for
+                                    |     message passing within haskell ecosystems, if the hugs is being used for simple
+                                    |     inputs from throughout the architecture (and potentially over NAT as well with)
+                                    |     a haskell daemon compiled with GHG. This protects the core process and provides
+                                    |     granularity to the architecture
 
-    Unsupported languages
-java
-elixir
-assembly
 
+    Unlikely ever to work with java, julia, or elixir due to their topographies :(
 
-    Does not currently work with java, julia, or elixir due to their strict structures :(
 
 TODO
-    move out of /dev/shm/ due to rising property values
+    Move out of /dev/shm/ due to rising property values
+    Add support for batch embedding
 
 
 developed using the following:
