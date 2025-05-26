@@ -67,6 +67,9 @@ Usage:      $ cat Bonjour.py
         run normally using the cli commands. You can adjust run flags altering the .go file, but it needs
         to execute on its own without user interactions. The -auto-approve flag in terraform is therefore
         non optional but everything else is adjustable with the parts = append(parts, "<arg>") line
+            The resulting terraform binaries are confirmed to function even on systems where terraform is
+            not installed, that much is completely portable and should work on any system where
+
             Refer to the included script examples for minimal forms of each
 
 
@@ -79,13 +82,6 @@ Usage:      $ cat Bonjour.py
             and I measured it at ~19MS compared to 100-200MS for other latex solutions, and Tholos shares
             interpreters if multiples are imported in the same go binary
 
-
-    Note that while the interpreter is embedded and included in the .bin, the modules are loaded from the 
-        original environment. This works well with anaconda and miniforge. I expected that the binary will
-        need to be regenerated anyway due to security patches, so at least this way it means only updating
-        the interpreter every few decades rather than regenerating every thol module. For most purposes it
-        should remain portable so long as the interpreter modules are present and compatible with the port
-        installed version of the interpreter
 
     Note that while the interpreter is embedded in the binary, libraries are loaded from the environment
         so that binaries with Tholos modules will inherit security updates, without needing to recompile
@@ -118,7 +114,20 @@ Usage:      $ cat Bonjour.py
             By default the encryption is only for obfuscation, if you want proper security you can add a
             tpm using the commented out sealKey function. Otherwise the key cannot be securely stored in
             a module. Set the hexKey variable to an external key to secure the system
-        
+
+
+    Note that the binaries are typically fully portable and can run on systems where no interpreters are
+        available or installed. The exception is if the binaries references external libraries, in which
+        case it uses the system libraries when compiled as well. For such files the recommended approach
+        is to use miniforge and mamba to provide the binaries, and then reference the environment in the
+        application. This way the plugins can receive updates without recompiling the binaries, which is
+        preferable for any high stakes system. Python and rust are both chronic offenders but these work
+        well with anaconda. Full containerization is also possible but renders Tholos partially obselete
+            This is so that the plugins can still receive regular security updates. If a built thol file
+            is created which depends on external libraries those other libraries should be considered as
+            dependencies of the go project the Tholos module is used in. This may not be fully reflected
+            in dependency managers so specific care must be taken in complex setups i.e. using miniforge
+
 
     Supported languages
 bash
@@ -150,7 +159,6 @@ assembly
 
 TODO
     move out of /dev/shm/ due to rising property values
-    enable unsupported languages
 
 
 If this code is used in a publication or in a system which is used in a publication, please cite the following:
