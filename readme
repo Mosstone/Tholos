@@ -157,7 +157,7 @@ haskell   (via runghc)           << | manually or have it statically reference a
                                     |     message passing within haskell ecosystems, if the hugs is being used for simple
                                     |     inputs from throughout the architecture (and potentially over NAT as well with)
                                     |     a haskell daemon compiled with GHG. This protects the core process and provides
-                                    |     granularity to the architecture
+                                    |     granularity to the architecture. It seems that hugs has no alternative for this
 
 
     Unlikely ever to work with java, julia, or elixir due to their topographies :(
