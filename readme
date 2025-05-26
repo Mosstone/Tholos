@@ -132,7 +132,7 @@ Usage:      $ cat Bonjour.py
     Supported languages
 bash
 python
-rust    (via rust-script)
+rust      (via rust-script)
 perl
 R
 javascript
@@ -140,7 +140,7 @@ ruby
 php
 lua
 luatex
-haskell
+haskell   (via runghc)
 scala
 deno
 matlab    (via octave)
