@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 1.2.1'
+version='v. 1.2.2'
 
 
 # Copyright 2025 Daniel Buerer
@@ -179,8 +179,7 @@ main() {
 		declare -g branded=1
 	fi
 
-	echo -n '[094m    Cloning library...' >$quiet
-
+	echo -n '[094m    Embedding Interpreter...' >$quiet
 
 	eyeprint() {
 		sha256sum <<< "$1$(lsblk -o UUID)$USER$(uname -r)$(lspci)" | awk '{print $1}'
@@ -203,6 +202,8 @@ main() {
 	scheterpreter="${schebang#* }"
 	interpreter="${scheterpreter% *}"
 
+    echo "Interpreter is $interpreter" > $verbose
+
 	if ! command -v $interpreter >/dev/null; then
 		echo "[094m    $interpreter is not installed...[0m"
 		exit 1
@@ -223,8 +224,8 @@ main() {
 
 	chmod 500 ./$lib/* 2>/dev/null
 
-	echo -e '\r  ✓ Cloning library...done[0m' >$quiet
-	echo -n '[094m    Creating binary...' >$quiet
+	echo -e '\r  ✓ Embedding Interpreter...done[0m' >$quiet
+	echo -n '[094m    Compiling Binary...' >$quiet
 
 
 ####################################################################################
@@ -235,40 +236,101 @@ main() {
 
 local CmdFlags
 case "$interpreter" in
-    bash|sh|python*|ruby|perl) 
+    bash|sh)
         CmdFlags+=("-s")
+    ;;
+
+    python*)
+        CmdFlags+=("-O")    # disable if debugging
+        CmdFlags+=("-s")
+        CmdFlags+=("-u")
+        # CmdFlags+=("-m")            # may be more reliable for python imports in dynamic systems, this
+        # CmdFlags+=("http.server")   # is equivalent to "python -m http.server"
+    ;;
+
+    ruby)
+        CmdFlags+=("-s")
+        # CmdFlags+=("--disable-gems")
+    ;;
+
+    perl)
+        CmdFlags+=("-s")
+        CmdFlags+=("-T")
     ;;
 
     deno)
         CmdFlags+=("run")
     ;;
 
-    wolframscript)
-        CmdFlags+=("-file")
+    haskell)
+        CmdFlags+=("")
     ;;
 
     make)
         CmdFlags+=("-f")
     ;;
 
-    luatex)
-        CmdFlags+=("--luaonly")
+    lua)
+        # CmdFlags+=("-l")
+        # CmdFlags+=("<lib>")
     ;;
 
-	meson)
-		CmdFlags+=("build")
-	;;
+    luatex)
+        CmdFlags+=("--interaction=nonstopmode")
+        CmdFlags+=("--luaonly")
+        CmdFlags+=("--shell-escape")    # Try disabling if problems arise
+        CmdFlags+=("--output-format=pdf")
+    ;;
+
+    Rscript)
+        CmdFlags+=("--vanilla")
+        CmdFlags+=("-e")
+    ;;
+
+    R)
+    ;;
+
+    octave)
+        CmdFlags+=("--silent")
+        CmdFlags+=("--no-gui")
+        # CmdFlags+=("--persistent")      # If needed
+    ;;
+
+    wolframscript)
+        CmdFlags+=("-file")
+    ;;
+
+    wolfram)
+        CmdFlags+=("-script")
+    ;;
+
+    :)
+        CmdFlags+=("")
+    ;;
+
+    meson)
+        CmdFlags+=("build")
+    ;;
+
+    terraform)
+        CmdFlags+=("apply")
+        CmdFlags+=("-auto-approve")
+    ;;
 
     *)
+        CmdFlags+=(":")
     ;;
 esac
 
 local CmdLine
 [[ -n ${CmdFlags[@]} ]] && {
     for flag in ${CmdFlags[@]}; do
-        CmdLine+="parts = append(parts, \"$flag\")"
+        CmdLine+=$"
+parts = append(parts, \"$flag\")"
     done
 }
+
+cat <<< "Embedding with injected arguments: $CmdLine" > $verbose
 
 #	The key that will be embedded into the module
 # SealKey=$(openssl rand -hex 16)
@@ -513,6 +575,8 @@ func main() {
 	//  flags are needed, and whether to use stdin or write to a file
     interp := "$scheterpreter"
 	parts := strings.Fields(interp)
+    // To add arguments or flags to the interpreter, add lines like the following to the go module
+    // parts = append(parts, "<argument>")
     $CmdLine // Interpreter flags injected here (or it's just this comment)
 	parts = append(parts, os.Args[1:]...)
 
@@ -619,4 +683,4 @@ main $@
 
 
 
-echo -e '\r  ✓ Creating binary...done[0m' >$quiet
+echo -e '\r  ✓ Compiling Binary...done[0m' >$quiet
