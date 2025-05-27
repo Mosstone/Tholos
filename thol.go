@@ -42,7 +42,7 @@ var script []byte
 // This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
 // Changing the hexKey value to a tpm provided key and commenting this line would result in a fully compliant system
 // This is intended to be obfuscation, not security. If security is needed comment this and use the function instead
-const hexKey = "3d8a1ecdb00179114e6235770f23ab1bc00d156d365ab3ff7d4965db4d16ca1a"
+const hexKey = "58587e6695d7c17d0fff27072d87c06f7dd5b5882d60dc529704e5fabae7e6b8"
 
 // func sealKey(device, file string) (string, error) {
 //     rwc, err := tpm2.OpenTPM(device)
@@ -232,7 +232,10 @@ log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
 //  flags are needed, and whether to use stdin or write to a file
     interp := "bash"
 parts := strings.Fields(interp)
-    parts = append(parts, "-s") // Interpreter flags injected here (or it's just this comment)
+    // To add arguments or flags to the interpreter, add lines like the following to the go module
+    // parts = append(parts, "<argument>")
+    
+parts = append(parts, "-s") // Interpreter flags injected here (or it's just this comment)
 parts = append(parts, os.Args[1:]...)
 
 //	Determines whether the interpreter can use stdin or if it needs a file to be written. Consider setting this to static
