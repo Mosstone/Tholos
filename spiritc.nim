@@ -176,7 +176,7 @@ proc main() =
         of "ex":
 
             proc elixircom(): string =
-                result = execProcess("elixirc -o ./out " & arg)
+                result = execProcess("elixirc " & arg)
 
             stdout.write("\e[94m    Compiling Elixir...\e[0m")
             flushFile(stdout)
