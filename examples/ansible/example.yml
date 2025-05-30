@@ -1,0 +1,14 @@
+#!/usr/bin/env ansible-playbook
+
+- name: Assemble test files into one output file
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Aggregate input form the contents of ./.src/ into ./output to form the vertically stacked word 'test'
+      assemble:
+        src: /home/shade/Tholos/.examples/ansible/.src/
+        dest: /home/shade/Tholos/.examples/ansible/output
+
+    - name: Proof of life
+      debug:
+        msg: test
