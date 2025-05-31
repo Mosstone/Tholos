@@ -1,4 +1,4 @@
-.libraries/* linguist-vendored=false
+.libraries/* linguist-vendored
 
 *.bin filter=lfs diff=lfs merge=lfs -text
 examples/deno/deno filter=lfs diff=lfs merge=lfs -text
