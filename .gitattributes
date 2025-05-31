@@ -1,5 +1,5 @@
-.examples/* linguist-vendored
-.libraries/* linguist-vendored
+.examples/** linguist-vendored
+.libraries/** linguist-vendored
 
 *.bin filter=lfs diff=lfs merge=lfs -text
 examples/deno/deno filter=lfs diff=lfs merge=lfs -text
