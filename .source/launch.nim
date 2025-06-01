@@ -12,18 +12,18 @@ import osproc
 # import std/strutils
 
 
-proc help() =
-    echo """[094m
-        Template application
+# proc help() =
+#     echo """[094m
+#         Template application
 
-        Buerer, D. (2025). application (Version 1.0.0) [Computer software]. https://doi.org/words
-        Licensed under the Apache 2 license
-    [0m"""
+#         Buerer, D. (2025). application (Version 1.0.0) [Computer software]. https://doi.org/words
+#         Licensed under the Apache 2 license
+#     [0m"""
 
-proc version() =
-    echo """[094m
-        v1.0.0
-    [0m"""
+# proc version() =
+#     echo """[094m
+#         v1.0.0
+#     [0m"""
 
 # Default flags
 var quietitude = false
@@ -38,12 +38,12 @@ proc arguments() =
     for arg in commandLineParams():
 
         case arg
-            of "--help":
-                help()
-                quit(0)
-            of "--version":
-                version()
-                quit(0)
+            # of "--help":
+            #     help()
+            #     quit(0)
+            # of "--version":
+            #     version()
+            #     quit(0)
 
             of "--quiet":
                 quietitude = true
