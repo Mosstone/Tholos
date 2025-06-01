@@ -1,0 +1,46 @@
+{
+    "arch": "x86_64",
+    "build": "0",
+    "build_number": 0,
+    "build_string": "0",
+    "channel": "conda-forge",
+    "constrains": [],
+    "depends": [
+        "__glibc >=2.17,<3.0.a0"
+    ],
+    "extracted_package_dir": "/home/shade/conda/pkgs/micromamba-2.1.1-0",
+    "files": [
+        "bin/micromamba"
+    ],
+    "fn": "micromamba-2.1.1-0.tar.bz2",
+    "license": "BSD-3-Clause AND MIT AND OpenSSL",
+    "license_family": "BSD",
+    "link": {
+        "source": "/home/shade/conda/pkgs/micromamba-2.1.1-0",
+        "type": 1
+    },
+    "md5": "368c2ea75b766838b4e588aae4c72c8b",
+    "name": "micromamba",
+    "package_tarball_full_path": "/home/shade/conda/pkgs/micromamba-2.1.1-0.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "bin/micromamba",
+                "path_type": "hardlink",
+                "sha256": "0d2dd49fb0171f27a63175e2c21941aafabdd6e46f521c498620b4b14ff604d8",
+                "sha256_in_prefix": "b2ff486d79806ed03b26d69878e280873d302b297caaf76b4ebbe3ea94fa8790",
+                "size_in_bytes": 16506152
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "micromamba",
+    "sha256": "2f43458b63b678e49da7e76b28a787bb286b4d280c5e502af0e1473f9e3ac710",
+    "size": 6283612,
+    "subdir": "linux-64",
+    "timestamp": 1746456805,
+    "track_features": "",
+    "url": "https://conda.anaconda.org/conda-forge/linux-64/micromamba-2.1.1-0.tar.bz2",
+    "version": "2.1.1"
+}
