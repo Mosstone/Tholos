@@ -72,7 +72,7 @@ var loc = getAppDir()
 
 
 
-proc launchWeatherApp() =
+proc launchTholos() =
 
     proc route(): string =
         result = execProcess(loc & "/services/thol/thol " & arg)
@@ -83,4 +83,9 @@ proc launchWeatherApp() =
     if not quietitude:  echo route()
     if verbosity:       stdout.write("\r\e[94m  ✓ Executing...done\e[0m\n")
 
-launchWeatherApp()
+
+proc main() =
+
+    launchTholos()
+
+main()

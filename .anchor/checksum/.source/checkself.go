@@ -2,9 +2,9 @@ package main
 
 import (
 	. "tholos/.modules/trace"
-	// "os"
 	"os/exec"
 	"fmt"
+
 	"crypto/sha256"
     "encoding/hex"
 	"path/filepath"
