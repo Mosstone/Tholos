@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 1.4'
+version='v. 1.5'
 
 
 # Copyright 2025 Daniel Buerer
@@ -89,8 +89,8 @@ zig
 [0m'; }
 
 
-verbose='/dev/null'
-quiet='/dev/stdout'
+verbosity='/dev/null'
+quietude='/dev/stdout'
 for flag in "$@"; do
 	case $flag in
 
@@ -106,11 +106,11 @@ for flag in "$@"; do
 		;;
 
 		--verbose)
-			verbose=/dev/stdout
+			verbosity=/dev/stdout
 		;;
 
 		--quiet)
-			quiet=/dev/null
+			quietude=/dev/null
 		;;
 
 		--link)
@@ -175,11 +175,11 @@ main() {
 	install -d -m 700 ./$lib
 	
 	if [[ $branded != 1 ]]; then
-		brand >$quiet
+		brand >$quietude
 		declare -g branded=1
 	fi
 
-	echo -n '[094m    Embedding Interpreter...' >$quiet
+	echo -n '[094m    Embedding Interpreter...' >$quietude
 
 	eyeprint() {
 		sha256sum <<< "$1$(lsblk -o UUID)$USER$(uname -r)$(lspci)" | awk '{print $1}'
@@ -202,7 +202,7 @@ main() {
 	scheterpreter="${schebang#* }"
 	interpreter="${scheterpreter% *}"
 
-    echo "Interpreter is $interpreter" > $verbose
+    echo "Interpreter is $interpreter" > $verbosity
 
 	if ! command -v $interpreter >/dev/null; then
 		echo "[094m    $interpreter is not installed...[0m"
@@ -224,8 +224,8 @@ main() {
 
 	chmod 500 ./$lib/* 2>/dev/null
 
-	echo -e '\r  ✓ Embedding Interpreter...done[0m' >$quiet
-	echo -n '[094m    Compiling Binary...' >$quiet
+	echo -e '\r  ✓ Embedding Interpreter...done[0m' >$quietude
+	echo -n '[094m    Compiling Binary...' >$quietude
 
 
 ####################################################################################
@@ -301,10 +301,10 @@ case "$interpreter" in
         CmdFlags+=("-f")
     ;;
 
-    # lua)
+    lua)
     #     # CmdFlags+=("-l")
     #     # CmdFlags+=("<lib>")
-    # ;;
+    ;;
 
     luatex)
         CmdFlags+=("--interaction=nonstopmode")
@@ -372,8 +372,8 @@ cmd.Env = append(cmd.Env, \"$arg\")"
     done
 }
 
-cat <<< "Embedding with injected command arguments: $CmdLine" > $verbose
-cat <<< "Embedding with injected environ arguments: $EnvLine" > $verbose
+cat <<< "Embedding with injected command arguments: $CmdLine" > $verbosity
+cat <<< "Embedding with injected environ arguments: $EnvLine" > $verbosity
 
 #	The key that will be embedded into the module
 # SealKey=$(openssl rand -hex 16)
@@ -384,6 +384,7 @@ SealKey=$(openssl rand -hex 32)
 # SealKey=$(openssl rand -hex 512)
 
 suggestion="$1"
+echo $suggestion > $verbosity
 
         ls ./"$suggestion".go &>/dev/null || cat <<-EOF > ./"$suggestion".go
 package main
@@ -393,11 +394,7 @@ package main
 //     Output goes to os.stdout by default in either case, this can be redefined with the cmd.Stdout = <output> line
 //     This suggested name is dynamically assigned by Tholos based on the module name, for duplicate modules setting
 //     unique name for files (i.e. using a hash or nanosecond timer) will allow the suggested name to also be unique
-//     so they can all be imported
-
-
-
-
+//     so they can all be imported.
 
 
 // Copyright 2025 Daniel Buerer
@@ -413,6 +410,9 @@ package main
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+
+// v1.5
 
 
 import (
@@ -479,7 +479,7 @@ func Trace(err error) {
 //go:embed $lib/$interpreter
 var interpreter []byte
 
-//go:embed $suggestion
+//go:embed $1
 var script []byte
 
 // This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
@@ -780,4 +780,4 @@ main $@
 
 
 
-echo -e '\r  ✓ Compiling Binary...done[0m' >$quiet
+echo -e '\r  ✓ Compiling Binary...done[0m' >$quietude
