@@ -9,17 +9,21 @@ Usage:      $ cat Bonjour.py
 
             $ ./port thol --link
             $ thol wunder --quiet; ls . | grep wunder
-            wunder              <<<    Keep if you're importing the .go module; it references the original at compile time and they must be in the same directory location
-            wunder.go           <<<    Only keep if you're importing into a larger go binary, this is a usable module which fully includes the code at compile time
-            wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the thol code is becoming a module
-                                           This has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
+            wunder              <<<    Keep if you're importing the .go module
+            wunder.go           <<<    Keep if you're importing into a larger go binary
+            wunder.bin          <<<    Keep if you want the script as a standalone binary
+                                           This has advantages for security and portability, and the bin
+                                           resists mutation. For standalones the executable can be large
+                                           unless the embedded libraries are removed
+
+                                           TODO: --thin flag to avoid embedding redundant libraries
 
 
->><< Currently working on the actual import mechanism, it requires some string manipulation on my part
+note: Converting package between suggested and main is currently manual, later updates will have the module in its own mod by default while providing the binary
 
 
     Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
-        The .go file depends on the /.lib folder that gets created but the compiler embeds it in the bin.
+        The .go file depends on the /.lib folder that gets created, but the compiler embeds it in the bin
         This utility is language agnostic, automatically embedding the interpreter stated in the schebang
 
 
