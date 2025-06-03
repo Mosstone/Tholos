@@ -30,6 +30,7 @@ unpack:
 link: unpack
 	mkdir -p $(HOME)/.local/bin
 	ln -sf $(HOME)/Tholos/launch $(HOME)/.local/bin/thol
+	chmod +x $(HOME)/Tholos/services/thol/thol
 
 run: link
 	./$(EXECDIR) --version
