@@ -2,5 +2,5 @@
 .libraries/** linguist-vendored
 .engine/** linguist-vendored
 
-*.bin filter=lfs diff=lfs merge=lfs -text
+*.tf.bin filter=lfs diff=lfs merge=lfs -text
 examples/deno/deno filter=lfs diff=lfs merge=lfs -text
