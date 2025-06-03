@@ -15,6 +15,9 @@ Usage:      $ cat Bonjour.py
                                            This has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
 
 
+>><< Currently working on the actual import mechanism, it requires some string manipulation on my part
+
+
     Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
         The .go file depends on the /.lib folder that gets created but the compiler embeds it in the bin.
         This utility is language agnostic, automatically embedding the interpreter stated in the schebang
