@@ -385,6 +385,8 @@ SealKey=$(openssl rand -hex 32)
 
         ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
 package main
+// package $1
+//     To use as an import, make this the package and run the embedded script using $1.Invoke()
 
 
 // Copyright 2025 Daniel Buerer
@@ -695,7 +697,6 @@ func main() {
 // Calls the main function when imported using <package>.Invoke()
 func Invoke() {
 	main()
-	fmt.Println("import test")
 }
 
 
