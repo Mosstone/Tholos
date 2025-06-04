@@ -137,31 +137,24 @@
 
 
     Supported languages
-bash
-python
-rust      (via rust-script)
-perl
-R
-javascript
-ruby
-php
-lua
-luatex
-scala
-deno
-matlab    (via octave)
-wolfram                    | Hugs also works if you use a second file with about 0.1 times the latenxy of runghc
-tcl                        | For this you would need an orchestrator file which you compile with thol. If you're
-rexx                       | writing output to memory or to disk, it's worth considering. The orchestrator would
-scheme    (via racket)     | have the interpreter embedded, but you would need to have the haskell code embedded
-haskell   (via runghc)  << | manually or have it statically reference a .hs in the same location as the thol bin
-                           |     This is because hugs is an actual interpreter whereas runghc is just a compiler
-                           |     that runs JIT when you execute, which is fine for long running applications but
-                           |     highly ineffecient for executables. It seems unlikely anyone will do this but I
-                           |     suggest creating a long running fully featured gcg haskell daemon and spawn the
-                           |     hugs98 processes with low latency to interact with threads from the main daemon
-                           |     The hugs98 would then serve as a bridge form the go binary to the haskell or to
-                           |     itself if runghc is used
+        bash
+        python
+        rust      (via rust-script)
+        perl
+        R
+        javascript
+        ruby
+        php
+        lua
+        luatex
+        scala
+        deno
+        matlab    (via octave)
+        wolfram
+        tcl
+        rexx
+        scheme    (via racket)
+        haskell   (via runghc) 
 
 
 developed using the following:
