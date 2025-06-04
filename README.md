@@ -1,17 +1,17 @@
             Tholos embeds executable modules in iterative languages, creating portable Go modules and compiled binaries
 
-Usage:      $ cat Bonjour.py 
-            #!/usr/bin/env python
-            print("Coucou")
-            $ thol Bonjour.py --quiet
-            $ ./Bonjour.py.bin  <<<    The active version of python is included in the binary. This can be moved anywhere, but if the python uses imports the new system will need to have those imports as well
-            Coucou
+    Usage:      $ cat Bonjour.py 
+                #!/usr/bin/env python
+                print("Coucou")
+                    $ thol Bonjour.py --quiet
+                $ ./Bonjour.py.bin  <<<    The active version of python is included in the binary. This can be moved anywhere, but if the python uses imports the new system will need to have those imports as well
+                Coucou
 
-            $ ./port thol --link
-            $ thol wunder --quiet; ls . | grep wunder
-            wunder              <<<    Keep if you're importing the .go module
-            wunder.go           <<<    Keep if you're importing into a larger go binary
-            wunder.bin          <<<    Keep if you want the script as a standalone binary
+                $ ./port thol --link
+                $ thol wunder --quiet; ls . | grep wunder
+                wunder              <<<    Keep if you're importing the .go module
+                wunder.go           <<<    Keep if you're importing into a larger go binary
+                wunder.bin          <<<    Keep if you want the script as a standalone binary
                                            This has advantages for security and portability, and the bin
                                            resists mutation. For standalones the executable can be large
                                            unless the embedded libraries are removed
@@ -19,7 +19,7 @@ Usage:      $ cat Bonjour.py
                                            TODO: --thin flag to avoid embedding redundant libraries
 
 
-note: Converting package between suggested and main is currently manual, later updates will have the module in its own mod by default while providing the binary
+
 
 
     Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
@@ -162,14 +162,6 @@ haskell   (via runghc)  << | manually or have it statically reference a .hs in t
                            |     hugs98 processes with low latency to interact with threads from the main daemon
                            |     The hugs98 would then serve as a bridge form the go binary to the haskell or to
                            |     itself if runghc is used
-
-
-    Unlikely ever to work with java, julia, or elixir due to their topographies :(
-
-
-TODO
-    Move out of /dev/shm/ due to rising property values
-    Add support for batch embedding
 
 
 developed using the following:
