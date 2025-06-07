@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-license: Apache-2.0 license
+license: Apache-2.0
 message: "If you use this software, please cite it as below."
 authors:
 - given-names: "Daniel" 
@@ -17,8 +17,8 @@ abstract: >
   can be moved to any system and executed, whereas the .go may be built
   into a larger go binary, accessing files up to 16452 times faster
 
-  Tholos allows embeded integration of various iterative language files
-  including rust, into go binaries as importable and standalone modules
+  This allows embedding of various file types, which use an interpreter
+  into go binaries as importable and executable modules
 
-  This has significant appliations for HPC, edge processors, low level 
+  This has significant applications for HPC, edge processors, low level 
   systems, and cybersecurity
