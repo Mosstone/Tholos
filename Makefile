@@ -49,6 +49,9 @@ link: unpack
 	@mkdir -p $(PREFIX)/bin/
 	@ln -sf $(CURDIR)/$(EXECDIR) $(PREFIX)/bin/$(COMMAND)
 
+#<	Double check permissions
+	chmod +x services/thol/thol
+
 run: link
 
 	./$(EXECDIR) --version
