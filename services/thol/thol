@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 1.5'
+version='v. 2.0.1'
 
 
 # Copyright 2025 Daniel Buerer
@@ -27,7 +27,7 @@ version='v. 1.5'
 printhelp() { echo '[094m
     Clones libraries and creates a portable compiled wrapper for the target file in the current directory
 
-Usage:      $ cat Bonjour.py 
+    Usage:  $ cat Bonjour.py 
             #!/usr/bin/env python
             print("Coucou")
             $ thol Bonjour.py --quiet
@@ -64,27 +64,27 @@ Usage:      $ cat Bonjour.py
 
     Supported languages
 bash
-javascript
 python
-rust
+rust      (via rust-script)
+perl
+R
+javascript
 ruby
 php
 lua
-haskell
-perl
-scala
-deno
+luatex         | Converts and executes in the current working directory. This causes some unavoidable latency but
+jupyter     << | otherwise works the same way as when the notebook was embedded originally. From here, recipients
+scala          | do not require the same (or any) jupyter to be installed to run the notebook. Code added to this
+deno           | notebook therefore will execute internally through stdin making it suitable for multistage procs
+wolfram
+matlab    (via octave)
+tcl                  
+rexx                 
+scheme    (via racket)
+haskell   (via runghc)
 
-    Unsupported languages
-java
-fortran
-assembly
-elixir
-zig
-
-    Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
-        Anything other than that will not pass the enforcement check
-        You can replace the # with the comment for the language being used, //!/usr/bin/env is also valid
+    Note: if the file extension is not recognized Tholos defaults to checking the schebang
+    Valid schebangs must be in the form #!/usr/bin/env <interpreter>
 
 [0m'; }
 
@@ -100,7 +100,7 @@ for flag in "$@"; do
 			exit 0
 		;;
 
-		--version)
+		-v|--version)
 			echo "[094m    $version[0m"
 			exit 0
 		;;
@@ -127,6 +127,7 @@ done
 
 brand() {
 	grep -q "虚" /dev/shm/.imNotHere 2> /dev/null || cat <<-'EOF' > /dev/shm/.imNotHere 2> /dev/null
+
 [094m                           .-*%%%*=:.     :.            .            .                .                                   .                                      .                                               
 [094m                      :#虚虚虚虚虚虚虚虚虚虚%###%=  _ .      .                  .                      .                                                                                            .            
 [094m                  .=虚虚虚虚虚虚虚%#*****-   .                                      .                                                                                   .                               .        
@@ -185,19 +186,106 @@ main() {
 		sha256sum <<< "$1$(lsblk -o UUID)$USER$(uname -r)$(lspci)" | awk '{print $1}'
 	}
 
+    #   Inject default values for the schebang based on file exention, defaulting to scan the actual
+    #   schebang if there is no extension matched in the target. Therefore you need the extension OR
+    #   the schebang but not both, but using both is recommended because then it will also work on a
+    #   .bak extension or similar. The schebang is not checked if the extension matches something on
+    #   this list.
+    case $1 in
 
-	schebang=$(head -n 1 "$1")
+        *.bat)
+            schebang="pwsh"
+        ;;
 
-	[[ $schebang == *!* ]] || {
-		echo -e "[094m\n    >><<    Schebang is required for $1...[0m"
-		exit 1
-	}
+        *.py)
+            schebang="python"
+        ;;
 
-	[[ $schebang == *!/usr/bin/env* ]] || {
-		echo -e "[094m\n    >><<    Schebang in $1 is likely malformed or outdated...\n            Format it as: #!/usr/bin/env <interpreter>[0m"
-		exit 1
-	};
+        *.sh)
+            schebang="bash"
+        ;;
 
+        *.rs)
+            schebang="rust-script"
+        ;;
+
+        *.js|*.mjs|*.cjs)
+            schebang="node"
+        ;;
+
+        *.ts)
+            schebang="ts-node"
+        ;;
+
+        *.ru)
+            schebang="ruby"
+        ;;
+
+        *.perl)
+            schebang="perl"
+        ;;
+
+        *.deno)
+            schebang="deno"
+        ;;
+
+        Makefile)
+            schebang="make"
+        ;;
+
+        *.lua)
+            schebang="lua"
+        ;;
+
+        *.tex)
+            schebang="lualatex"
+        ;;
+
+        *.R)
+            schebang="Rscript"
+        ;;
+
+        *.m)
+            schebang="octave"
+        ;;
+
+        *.wl)
+            schebang="wolframscript"
+        ;;
+
+        *.meson.build)
+            schebang="meson"
+        ;;
+
+        *.ansible.yml)
+            schebang="ansible"
+        ;;
+
+        *.tf)
+            schebang="terraform"
+        ;;
+
+        #   The rest are interpreters which cannot tolerate any schebang
+        *.ipynb)
+            schebang="jupyter"
+        ;;
+
+        *)
+
+            schebang=$(head -n 1 "$1")
+
+            [[ $schebang == *!* ]] || {
+                echo -e "[094m\n    >><<    Schebang is required for $1...[0m"
+                exit 1
+            }
+
+            [[ $schebang == *!/usr/bin/env* ]] || {
+                echo -e "[094m\n    >><<    Schebang in $1 is likely malformed or outdated...\n            Format it as: #!/usr/bin/env <interpreter>[0m"
+                exit 1
+            };
+
+        ;;
+    esac
 
 	scheterpreter="${schebang#* }"
 	interpreter="${scheterpreter% *}"
@@ -238,12 +326,12 @@ local CmdFlags
 local EnvFlags
 case "$interpreter" in
 
-    # pwsh)
-    #     CmdFlags+=("-NonInteractive")
+    pwsh)
+        CmdFlags+=("-NonInteractive")
 	
-    #     # EnvFlags+=("LD_LIBRARY_PATH=/opt/microsoft/powershell/7/pwsh.dll")
-    #     # EnvFlags+=("DOTNET_ROOT=/opt/microsoft/powershell/7/pwsh.dll")
-    # ;;
+        # EnvFlags+=("LD_LIBRARY_PATH=/opt/microsoft/powershell/7/pwsh.dll")
+        # EnvFlags+=("DOTNET_ROOT=/opt/microsoft/powershell/7/pwsh.dll")
+    ;;
 
     python*)
         #   This is the arguments to be added. The following is the equivalent to running "python -Osu .py"
@@ -306,11 +394,24 @@ case "$interpreter" in
     #     # CmdFlags+=("<lib>")
     ;;
 
-    luatex)
+    lualatex)
+
+        output="${1%.*}"                #   The name of the pdf output. This default will have "thol Lyon.tex"
+                                        #   create a tex binary which generates "Lyon.pdf" files in the active
+                                        #   directory (not the location of the executable)
+
+        # CmdFlags+=("--output-format=dvi")
+        # CmdFlags+=("--luaonly")       
+
         CmdFlags+=("--interaction=nonstopmode")
-        CmdFlags+=("--luaonly")
-        CmdFlags+=("--shell-escape")    # Try disabling if problems arise
-        CmdFlags+=("--output-format=pdf")
+        CmdFlags+=("--shell-escape")    #   Try disabling if problems arise
+        CmdFlags+=("-recorder")
+        CmdFlags+=("--progname=lualatex")
+        CmdFlags+=("--jobname=$output")
+        EnvFlags+=("PATH=/usr/bin:$PATH")
+        EnvFlags+=("TEXFORMATS=./lib/tex/formats:/var/lib/texmf/web2c/luahbtex")
+        EnvFlags+=("LUA_PATH=./?.lua;;")
+
     ;;
 
     Rscript)
@@ -325,7 +426,7 @@ case "$interpreter" in
     octave)
         CmdFlags+=("--silent")
         CmdFlags+=("--no-gui")
-        # CmdFlags+=("--persistent")      # If needed
+        # CmdFlags+=("--persistent")      #     If needed
     ;;
 
     wolframscript)
@@ -347,6 +448,20 @@ case "$interpreter" in
     terraform)
         CmdFlags+=("apply")
         CmdFlags+=("-auto-approve")
+    ;;
+
+    jupyter)
+        CmdFlags+=("nbconvert")
+        CmdFlags+=("--to")
+        CmdFlags+=("notebook")
+        CmdFlags+=("--execute")
+        CmdFlags+=("--inplace")
+        CmdFlags+=("$tmpPath")
+        CmdFlags+=("--output-dir")
+        CmdFlags+=("$(realpath $(pwd))")
+        CmdFlags+=("--stdin")
+        # CmdFlags+=("/dev/shm/.$(eyeprint $interpreter)/$1")
+        # EnvFlags+=("PYTHONPATH=$HOME/Tholos/.engine/.pyzmq/lib/python3.13/site-packages")
     ;;
 
     *)
@@ -434,10 +549,10 @@ import (
 	// "github.com/google/go-tpm/tpm2"
 )
 
-// Alternative error handling function, more robust and concise than typical blocks. Also available in .modules as a
-// dot import, but supplied here to keep the thol portable. Just add Trace(err) after anything with an err output to
-// to satisfy compiler requirements. This is a fail first method creating a log file in pwd indicating the error and
-// line number in the 'locs' folder. To specify change the loc value to point to the path that fails should point to
+
+//  Resources     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 func Trace(err error) {
 	if err != nil {
 
@@ -451,9 +566,6 @@ func Trace(err error) {
 		
 		// gets file path and line number
 		_, path, line, _ := runtime.Caller(1)
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 		msg := fmt.Errorf(">><< Error occurred in file %s at line %d with error: %w", path, line, err)
@@ -642,53 +754,57 @@ func sealExample(message string) string {
 // func extrace() { }
 // func extract() { }
 
+
+// Logic    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 func execute() {
 
-	//  The path for the interpreter, but not the libraries, to be used at runtime. Falls back to the system interpreter if
-	//  present, but is generally portable unless libraries are used. This is cached after the first run of the session, so
-	//  subsequent executions are marginally faster. Uses a hash of the username and int name by default, but can be easily
-	//  changed here to a specific location or deleted to only use the system interpreter
+    //  The path for the interpreter, but not the libraries, to be used at runtime. Falls back to the system interpreter if
+    //  present, but is generally portable unless libraries are used. This is cached after the first run of the session, so
+    //  subsequent executions are marginally faster. Uses a hash of the username and int name by default, but can be easily
+    //  changed here to a specific location or deleted to only use the system interpreter
     intPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $interpreter)")
-	os.MkdirAll(filepath.Dir(intPath), 0755)
-	err := os.WriteFile(intPath, interpreter, 0755)
-	Trace(err)
+    os.MkdirAll(filepath.Dir(intPath), 0755)
+    err := os.WriteFile(intPath, interpreter, 0755)
+    Trace(err)
 
-	//  The name of the interpreter being used for the embed for the module. Determines which execution logic to use, which
-	//  flags are needed, and whether to use stdin or write to a file
+    //  The name of the interpreter being used for the embed for the module. Determines which execution logic to use, which
+    //  flags are needed, and whether to use stdin or write to a file
     interp := "$scheterpreter"
-	parts := strings.Fields(interp)
+    parts := strings.Fields(interp)
     // To add arguments or flags to the interpreter, add lines like the following to the go module
     // parts = append(parts, "<argument>")
     $CmdLine // Command flags injected here (or only this comment)
-	parts = append(parts, os.Args[1:]...)
+    parts = append(parts, os.Args[1:]...)
 
 
-	//	Determines whether the interpreter can use stdin or if it needs a file to be written. Consider setting this to static
-	//  needsFile = true if a real file is required. Any tmp file created will be encrypted and then deleted by default, this
-	//  can be changed to cache the file instead farther down. Notably, this is fully compatible with sealMake and works fine
-	//  if executed outside of an embed, subject to aes encryption standards.
-	var needsFile bool
-	switch interp {
-	case "rust-script", "deno", "Rscript", "scala", "wolframscript", "racket", "luatex", "make", "ansible-playbook":
-		needsFile = true
-	default:
-		needsFile = false
-	} //  fmt.Println(needsFile)
+    //	Determines whether the interpreter can use stdin or if it needs a file to be written. Consider setting this to static
+    //  needfile = true if a real file is required. Any tmp file created will be encrypted and then deleted by default, this
+    //  can be changed to cache the file instead farther down. Notably, this is fully compatible with sealMake and works fine
+    //  if executed outside of an embed, subject to aes encryption standards.
+    var needfile bool
+    switch interp {
+    case "rust-script", "deno", "Rscript", "scala", "wolframscript", "racket", "lualatex", "make", "ansible-playbook":
+        needfile = true
+    default:
+        needfile = false
+    } //  fmt.Println(needfile) > returns whether alternate logic is needed for the interpreter
 
-	var tmpPath string
-	if needsFile {
+    var tmpPath string
+    if needfile {
 
-        tmpPath = fmt.Sprintf("%s/$(eyeprint $1)", "/dev/shm/.$(eyeprint $1)/")
-		os.MkdirAll(filepath.Dir(tmpPath), 0755)
+        tmpPath = fmt.Sprintf("%s/$(eyeprint $1)", "/dev/shm/.$(eyeprint $1)")
+        os.MkdirAll(filepath.Dir(tmpPath), 0755)
 
-		if err := os.WriteFile(tmpPath, script, 0755); err != nil {
-			Trace(err)
-		}
+        if err := os.WriteFile(tmpPath, script, 0755); err != nil {
+            Trace(err)
+        }
 
-		defer os.Remove(tmpPath)
-		parts = append(parts, tmpPath)
+        defer os.Remove(tmpPath)
+        parts = append(parts, tmpPath)
 
-	}
+    }
 
 	//  Executes the embedded file, using the custom library path but falling back to system libraries if anything is missing
 	cmd := exec.Command(intPath, parts[1:]...)
@@ -698,8 +814,8 @@ func execute() {
 	cmd.Stderr = os.Stderr
 
 	//  Sends the file to stdin if the interpreter is in a language that supports is, otherwise writes to memory temporarily
-	//  To modify behaviour, add or remove interpreters from needsFile above
-	if !needsFile {
+	//  To modify behaviour, add or remove interpreters from needfile above
+	if !needfile {
 		stdinPipe, err := cmd.StdinPipe()
 		Trace(err)
 
