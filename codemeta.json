@@ -1,0 +1,19 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "author": [
+    {
+      "@id": "https://orcid.org/0009-0002-5084-0465",
+      "@type": "Person",
+      "familyName": "Buerer",
+      "givenName": "Daniel"
+    }
+  ],
+  "datePublished": "2025-05-06",
+  "description": "Tholos is a metaprogram which embeds executable files to  go binaries embedded with the interpreter and libraries of other files. Resulting binaries and .go files are fully portable and reproduceable. The .bin can be moved to any system and executed, whereas the .go may be built into a larger go binary, accessing files up to 16452 times faster\nTholos allows embeded integration of various iterative language files including rust, into go binaries as importable and standalone modules\nThis has significant appliations for HPC, edge processors, low level  systems, and cybersecurity\n",
+  "identifier": "https://doi.org/10.5281/zenodo.15350673",
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "name": "Tholos",
+  "url": "https://github.com/Mosstone/Tholos",
+  "version": "1.0.0"
+}

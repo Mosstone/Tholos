@@ -1,13 +1,30 @@
 #!/usr/bin/env make
 
 # Variables
-# TARBALL     := tarball.tar.gz
-# DISTDIR     := Application
+INSTALL   ?= install -m 755
+PREFIX    ?= $(HOME)/.local
+DESTDIR   ?=
+DIRECT    := $(DESTDIR)$(PREFIX)
+
+BINDIR    := $(DIRECT)/bin
+LIBDIR    := $(DIRECT)/lib
+SYSCONFDIR:= $(DIRECT)/etc
+DATADIR   := $(DIRECT)/share
+MANDIR    := $(DATADIR)/man
+
 EXECDIR     := launch
+TARBALL     := null # tarball.tar.gz
+DISTDIR     := Application
+COMMAND     := thol
 
 .PHONY: all unpack link run clean
 
 all: run
+
+
+
+
+
 
 unpack:
 # 	mkdir -p $(DISTDIR)
@@ -28,12 +45,16 @@ unpack:
 # 		elixirc elixirtest.ex 2> /dev/null .ex
 
 link: unpack
-	mkdir -p $(HOME)/.local/bin
-	ln -sf $(HOME)/Tholos/launch $(HOME)/.local/bin/thol
+
+	@mkdir -p $(PREFIX)/bin/
+	@ln -sf $(CURDIR)/$(EXECDIR) $(PREFIX)/bin/$(COMMAND)
+
+#<	Double check permissions
+	chmod +x services/thol/thol
 
 run: link
+
 	./$(EXECDIR) --version
 
 clean:
-#	rm -rf $(TARDIR)
-	rm $(HOME)/.local/bin/thol
+	rm $(PREFIX)/bin/$(COMMAND)

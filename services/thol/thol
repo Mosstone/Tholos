@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 1.3'
+version='v. 1.5'
 
 
 # Copyright 2025 Daniel Buerer
@@ -89,8 +89,8 @@ zig
 [0m'; }
 
 
-verbose='/dev/null'
-quiet='/dev/stdout'
+verbosity='/dev/null'
+quietude='/dev/stdout'
 for flag in "$@"; do
 	case $flag in
 
@@ -106,11 +106,11 @@ for flag in "$@"; do
 		;;
 
 		--verbose)
-			verbose=/dev/stdout
+			verbosity=/dev/stdout
 		;;
 
 		--quiet)
-			quiet=/dev/null
+			quietude=/dev/null
 		;;
 
 		--link)
@@ -175,11 +175,11 @@ main() {
 	install -d -m 700 ./$lib
 	
 	if [[ $branded != 1 ]]; then
-		brand >$quiet
+		brand >$quietude
 		declare -g branded=1
 	fi
 
-	echo -n '[094m    Embedding Interpreter...' >$quiet
+	echo -n '[094m    Embedding Interpreter...' >$quietude
 
 	eyeprint() {
 		sha256sum <<< "$1$(lsblk -o UUID)$USER$(uname -r)$(lspci)" | awk '{print $1}'
@@ -202,7 +202,7 @@ main() {
 	scheterpreter="${schebang#* }"
 	interpreter="${scheterpreter% *}"
 
-    echo "Interpreter is $interpreter" > $verbose
+    echo "Interpreter is $interpreter" > $verbosity
 
 	if ! command -v $interpreter >/dev/null; then
 		echo "[094m    $interpreter is not installed...[0m"
@@ -224,8 +224,8 @@ main() {
 
 	chmod 500 ./$lib/* 2>/dev/null
 
-	echo -e '\r  ✓ Embedding Interpreter...done[0m' >$quiet
-	echo -n '[094m    Compiling Binary...' >$quiet
+	echo -e '\r  ✓ Embedding Interpreter...done[0m' >$quietude
+	echo -n '[094m    Compiling Binary...' >$quietude
 
 
 ####################################################################################
@@ -270,7 +270,7 @@ case "$interpreter" in
 
     rust-script)
         EnvFlags+=("RUST_SCRIPT_CACHE=./$lib/rust-script") # caches the binary in the Tholos files, keeping it away from the system files
-        EnvFlags+=("RUST_BACKTRACE=1")  # shows crash information if there's an error
+        EnvFlags+=("RUST_BACKTRACE=1")  # shows crash information if there is an error
     ;;
 
     node)
@@ -301,10 +301,10 @@ case "$interpreter" in
         CmdFlags+=("-f")
     ;;
 
-    # lua)
+    lua)
     #     # CmdFlags+=("-l")
     #     # CmdFlags+=("<lib>")
-    # ;;
+    ;;
 
     luatex)
         CmdFlags+=("--interaction=nonstopmode")
@@ -372,8 +372,8 @@ cmd.Env = append(cmd.Env, \"$arg\")"
     done
 }
 
-cat <<< "Embedding with injected command arguments: $CmdLine" > $verbose
-cat <<< "Embedding with injected environ arguments: $EnvLine" > $verbose
+cat <<< "Embedding with injected command arguments: $CmdLine" > $verbosity
+cat <<< "Embedding with injected environ arguments: $EnvLine" > $verbosity
 
 #	The key that will be embedded into the module
 # SealKey=$(openssl rand -hex 16)
@@ -383,8 +383,18 @@ SealKey=$(openssl rand -hex 32)
 # SealKey=$(openssl rand -hex 256)
 # SealKey=$(openssl rand -hex 512)
 
-        ls ./"$1"-wrapper.go &>/dev/null || cat <<-EOF > ./"$1".go
+suggestion="$1"
+echo $suggestion > $verbosity
+
+        ls ./"$suggestion".go &>/dev/null || cat <<-EOF > ./"$suggestion".go
 package main
+// package $suggestion
+//     To use as an import, swap the comments and in the binary main run the embedded script as $1.Invoke()
+//     This will run the embedded script as if it were executed in cli with the interpreter, using the flags defined
+//     Output goes to os.stdout by default in either case, this can be redefined with the cmd.Stdout = <output> line
+//     This suggested name is dynamically assigned by Tholos based on the module name, for duplicate modules setting
+//     unique name for files (i.e. using a hash or nanosecond timer) will allow the suggested name to also be unique
+//     so they can all be imported.
 
 
 // Copyright 2025 Daniel Buerer
@@ -402,6 +412,9 @@ package main
 // limitations under the License.
 
 
+// v1.5
+
+
 import (
 	_ "embed"
 	"fmt"
@@ -410,6 +423,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"runtime"
+	"time"
 
 	"crypto/aes"
 	"crypto/cipher"
@@ -418,6 +433,48 @@ import (
 	// "github.com/google/go-tpm/tpmutil"
 	// "github.com/google/go-tpm/tpm2"
 )
+
+// Alternative error handling function, more robust and concise than typical blocks. Also available in .modules as a
+// dot import, but supplied here to keep the thol portable. Just add Trace(err) after anything with an err output to
+// to satisfy compiler requirements. This is a fail first method creating a log file in pwd indicating the error and
+// line number in the 'locs' folder. To specify change the loc value to point to the path that fails should point to
+func Trace(err error) {
+	if err != nil {
+
+		// the location to save the error file
+		loc := "logs"
+
+		// gets julian time 
+		now := time.Now().UTC()
+    	j := fmt.Sprintf("%02d%03d", now.Year() % 100, now.YearDay())
+		julian := fmt.Sprintf(j + now.Format("150405"))
+		
+		// gets file path and line number
+		_, path, line, _ := runtime.Caller(1)
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		msg := fmt.Errorf(">><< Error occurred in file %s at line %d with error: %w", path, line, err)
+
+		os.MkdirAll(loc, 0770)
+		output := fmt.Sprintf("%s/%s", loc, julian)
+		logErr := os.WriteFile(output, []byte(fmt.Sprintf("%v", msg)), 0600)
+		if logErr != nil {
+			panic(logErr)
+		}
+
+		var realpath, err = filepath.Abs(loc)
+		if err != nil {
+    		log.Fatal(err)
+		}
+
+		fmt.Println("Error log created in: " + realpath)
+		log.Fatal(msg)
+
+	}
+}
 
 //go:embed $lib/$interpreter
 var interpreter []byte
@@ -432,7 +489,7 @@ const hexKey = "$SealKey"
 
 // func sealKey(device, file string) (string, error) {
 //     rwc, err := tpm2.OpenTPM(device)
-//     if err != nil {
+//     trace(err)
 //         return "", fmt.Errorf("open TPM: %w", err)
 //     }
 //     defer rwc.Close()
@@ -502,9 +559,7 @@ func sealNonce() []byte {
 
 	rng := make([]byte, 12)
 	_, err := rand.Read(rng)
-	if err != nil {
-		log.Fatalf("Failed to create nonce: %v", err)
-	}
+	Trace(err)
 	return rng
 
 }
@@ -521,23 +576,17 @@ func sealNonce() []byte {
 // controlling scope by which binaries import the same thol modules. Since several modules may be used for different
 // binaries, it may not immediately obvious to an outside observer which modules are being used as a key group since
 // a thol copy of an innocent file, or even different versions of the same module, can be used for binaries to share
-// the same module keys and be able to decrypt each other's messages built through that module.
+// the same module keys and be able to decrypt each other_s messages built through that module.
 func sealMake(plaintext []byte) ([]byte, error) {
 
 	key, err := hex.DecodeString(hexKey)
-	if err != nil {
-		log.Fatalf("Failed to transbobulate keys: %v", err)
-	}
+	Trace(err)
 
 	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
+	Trace(err)
 
 	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
+	Trace(err)
 
 	nonce := sealNonce()
 	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
@@ -553,9 +602,7 @@ func sealBreak(ciphertext []byte) ([]byte, error) {
 		return nil, fmt.Errorf("ciphertext too short")
 	}
 	key, err := hex.DecodeString(hexKey)
-	if err != nil {
-		log.Fatalf("Failed to transbobulate keys: %v", err)
-	}
+	Trace(err)
 
 	nonce := ciphertext[:12]
 	defer func() {
@@ -566,14 +613,10 @@ func sealBreak(ciphertext []byte) ([]byte, error) {
 
 	ciphertext = ciphertext[12:]
 	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
+	Trace(err)
 
 	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
+	Trace(err)
 
 	return gcm.Open(nil, nonce, ciphertext, nil)
 
@@ -586,22 +629,20 @@ func sealExample(message string) string {
 	// fmt.Println(string(bytes))
 
 	bytes, err = sealMake(bytes)
-	if err != nil {
-		log.Fatalf("sealMake failed: %v", err)
-	}
+	Trace(err)
 	// fmt.Println(string(bytes))
 
 	bytes, err = sealBreak(bytes)
-	if err != nil {
-		log.Fatalf("sealBreak failed: %v", err)
-	}
+	Trace(err)
 	// fmt.Println(string(bytes))
-	message = string(bytes)
 
-	return message
+	return string(bytes)
 }
 
-func main() {
+// func extrace() { }
+// func extract() { }
+
+func execute() {
 
 	//  The path for the interpreter, but not the libraries, to be used at runtime. Falls back to the system interpreter if
 	//  present, but is generally portable unless libraries are used. This is cached after the first run of the session, so
@@ -609,10 +650,8 @@ func main() {
 	//  changed here to a specific location or deleted to only use the system interpreter
     intPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $interpreter)")
 	os.MkdirAll(filepath.Dir(intPath), 0755)
-	errEmbedInt := os.WriteFile(intPath, interpreter, 0755)
-	if errEmbedInt != nil {
-		log.Fatalf("Failed to write embedded interpreter: %v", errEmbedInt)
-	}
+	err := os.WriteFile(intPath, interpreter, 0755)
+	Trace(err)
 
 	//  The name of the interpreter being used for the embed for the module. Determines which execution logic to use, which
 	//  flags are needed, and whether to use stdin or write to a file
@@ -643,8 +682,9 @@ func main() {
 		os.MkdirAll(filepath.Dir(tmpPath), 0755)
 
 		if err := os.WriteFile(tmpPath, script, 0755); err != nil {
-			log.Fatalf("Failed to write embedded script: %v", err)
+			Trace(err)
 		}
+
 		defer os.Remove(tmpPath)
 		parts = append(parts, tmpPath)
 
@@ -661,27 +701,24 @@ func main() {
 	//  To modify behaviour, add or remove interpreters from needsFile above
 	if !needsFile {
 		stdinPipe, err := cmd.StdinPipe()
-		if err != nil {
-			log.Fatalf("Failed to create stdin pipe: %v", err)
-		}
+		Trace(err)
 
 		if err := cmd.Start(); err != nil {
-			log.Fatalf("Failed to start interpreter: %v", err)
+			Trace(err)
 		}
 
 		_, err = stdinPipe.Write(script)
-		if err != nil {
-			log.Fatalf("Failed to write script to interpreter stdin: %v", err)
-		}
+		Trace(err)
+
 		stdinPipe.Close()
 	} else {
 		if err := cmd.Start(); err != nil {
-			log.Fatalf("Failed to start interpreter: %v", err)
+			Trace(err)
 		}
 	}
 
 	if err := cmd.Wait(); err != nil {
-		log.Fatal(err)
+		Trace(err)
 	}
 
 	for i := range interpreter {
@@ -690,6 +727,21 @@ func main() {
 	for i := range script {
 		script[i] = 0
 	}
+
+}
+
+
+func main() {
+
+    // extract()
+    execute()
+	// extrace()
+
+}
+
+
+func Invoke() {
+	main()
 }
 
 
@@ -728,4 +780,4 @@ main $@
 
 
 
-echo -e '\r  ✓ Compiling Binary...done[0m' >$quiet
+echo -e '\r  ✓ Compiling Binary...done[0m' >$quietude

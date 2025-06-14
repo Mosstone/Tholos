@@ -1,23 +1,30 @@
             Tholos embeds executable modules in iterative languages, creating portable Go modules and compiled binaries
 
-Usage:      $ cat Bonjour.py 
-            #!/usr/bin/env python
-            print("Coucou")
-            $ thol Bonjour.py --quiet
-            $ ./Bonjour.py.bin  <<<    The active version of python is included in the binary. This can be moved anywhere, but if the python uses imports the new system will need to have those imports as well
-            Coucou
+    Usage:      $ cat Bonjour.py 
+                #!/usr/bin/env python
+                print("Coucou")
+                    $ thol Bonjour.py --quiet
+                $ ./Bonjour.py.bin  <<<    The active version of python is included in the binary. This can be moved anywhere, but if the python uses imports the new system will need to have those imports as well
+                Coucou
 
-            $ ./port thol --link
-            $ thol wunder --quiet; ls . | grep wunder
-            wunder              <<<    Keep if you're importing the .go module; it references the original at compile time and they must be in the same directory location
-            wunder.go           <<<    Only keep if you're importing into a larger go binary, this is a usable module which fully includes the code at compile time
-            wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the thol code is becoming a module
-                                           This has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
+                $ ./port thol --link
+                $ thol wunder --quiet; ls . | grep wunder
+                wunder              <<<    Keep if you're importing the .go module
+                wunder.go           <<<    Keep if you're importing into a larger go binary
+                wunder.bin          <<<    Keep if you want the script as a standalone binary
+                                           This has advantages for security and portability, and the bin
+                                           resists mutation. For standalones the executable can be large
+                                           unless the embedded libraries are removed
+
+                                           TODO: --thin flag to avoid embedding redundant libraries
+
+
+
 
     Notes:
 
     Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
-        The .go file depends on the /.lib folder that gets created but the compiler embeds it in the bin.
+        The .go file depends on the /.lib folder that gets created, but the compiler embeds it in the bin
         This utility is language agnostic, automatically embedding the interpreter stated in the schebang
         or indicated by a recognized file extension. The interpreters are automatically hard coded with a
         set of commannd and environment arguments required by Tholos to execute them reliably
@@ -116,31 +123,25 @@ Usage:      $ cat Bonjour.py
             in dependency managers so specific care must be taken in complex setups i.e. using miniforge
 
 
-Supported languages
-bash
-python
-rust      (via rust-script)
-perl
-R
-javascript
-ruby
-php
-lua
-luatex         | Converts and executes in the current working directory. This causes some unavoidable latency but
-jupyter     << | otherwise works the same way as when the notebook was embedded originally. From here, recipients
-scala          | do not require the same (or any) jupyter to be installed to run the notebook. Code added to this
-deno           | notebook therefore will execute internally through stdin making it suitable for multistage procs
-wolfram
-matlab    (via octave)
-tcl                  
-rexx                 
-scheme    (via racket)
-haskell   (via runghc)
-
-
-TODO
-    Move out of /dev/shm/ due to rising property values
-    Add support for batch embedding
+    Supported languages
+        bash
+        python
+        rust      (via rust-script)
+        perl
+        R
+        javascript
+        ruby
+        php
+        lua
+        luatex
+        scala
+        deno
+        matlab    (via octave)
+        wolfram
+        tcl
+        rexx
+        scheme    (via racket)
+        haskell   (via runghc) 
 
 
 developed using the following:
