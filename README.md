@@ -144,6 +144,12 @@
         haskell   (via runghc) 
 
 
+    Note that in the .engines folder there is an included port utility which creates fully isolated conda
+    environments in that folder. This could be used to create a static copy of any package in conda-forge
+    and it will create a usable set of libraries completely independent of the system environment. It can
+    also be used to select the correct interpreter among the built environments, useful for automation
+
+
 developed using the following:
     go version go1.23.9 linux/amd64
     6.14.6-200.fc41.x86_64
@@ -151,6 +157,6 @@ developed using the following:
 
 
 If this code is used in a publication or in a system which is used in a publication, please cite the following:
-    **Buerer, Daniel** (2025). *Tholos* (Version 1.2) [Computer software].
+    **Buerer, Daniel** (2025). *Tholos* (Version 2.0.1) [Computer software].
     https://doi.org/10.5281/zenodo.15350673
 or reference the citation.cff for standard format information
