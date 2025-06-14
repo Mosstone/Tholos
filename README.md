@@ -14,10 +14,13 @@ Usage:      $ cat Bonjour.py
             wunder.bin          <<<    Only keep if you want the script as a standalone binary. Not relevant outside of testing if the thol code is becoming a module
                                            This has security advantages, resists mutation, and uses a snapshot of the interpreter while still using the system libraries—especially useful for python
 
+    Notes:
 
     Once generated the binary is fully standalone, whereas the .go can be integrated into larger binaries
         The .go file depends on the /.lib folder that gets created but the compiler embeds it in the bin.
         This utility is language agnostic, automatically embedding the interpreter stated in the schebang
+        or indicated by a recognized file extension. The interpreters are automatically hard coded with a
+        set of commannd and environment arguments required by Tholos to execute them reliably
 
 
     There are two outputs: the compiled .bin executable which is compiled as a fully embedded binary, and
@@ -26,23 +29,6 @@ Usage:      $ cat Bonjour.py
         in the same folder and then included in the same golang compile, the embed would only include one
         version of the interpreter for all of them. The resulting large binary may then be able to access
         the embedded files and their interpreters
-
-
-    Use --link or --path to also add the binary as a command, creating a symlink at the present directory
-        use only if the bin will stay in place and not be renamed. Otherwise, the command for it is this:
-        ln -s "$(realpath <code to execute>)" ~/.local/bin/<command to type>
-
-
-    Requires a valid schebang in this format: #!/usr/bin/env <interpreter>
-        thol begins matching after the ! so you can use other comments such as // or % if there is ever a
-        requirement. Anything other than that will not pass the enforcement check. Yes, this includes the
-        /usr/bin/bash schebang that you've been using
-
-
-    Confirmed to work on bash, python, rust (rust-script), ruby, php, lua, haskell, perl, scala, and deno
-        Notably, using rust-script allows thol to embed rust code into a go binary and rust code normally
-        without the project spiralling deeper into the rust miasma. For any given language embedded using
-        this utility, the interpreters will share an interpreter cache, so long as they share a directory
 
 
     Tholos can now be used for build files, embedding make ninja and meson. It uses the schebang like for
@@ -70,26 +56,29 @@ Usage:      $ cat Bonjour.py
             The resulting terraform binaries are confirmed to function even on systems where terraform is
             not installed, that much is completely portable and should work on any system where
 
-            Refer to the included script examples for minimal forms of each
+            Refer to the included script examples for minimal forms of each. Be aware that the embed size
+            of these are larger than other interpreters. It is still viable for in house distribution but
+            transferring them over nat may run into limits
 
 
-    Now also able to create latex files with luatex embedded. Just use #!/usr/bin/env luatex, followed by
+    Now also able to create lualatex embeds. Name the file .tex, or include #!/usr/bin/env lualatex, then
         valid lua to create automated latex generation. If incorporated into scientific applications this
-        could create a powerful way to create and maintain latex. If placed imported by a go based mpi it
-        would be able to document all the data passing through it into latex, making this Tholos valuable
-        for scientific and machine learning for capturing and visualizing data
+        could create a powerful way to generate latex documentation. If placed imported by a go layer, it
+        would be able to document all the data passing through it into latex. 
             Notably, the luatex binary module is 8MB, compared to hundreds of MB for other latex installs
             and I measured it at ~19MS compared to 100-200MS for other latex solutions, and Tholos shares
-            interpreters if multiples are imported in the same go binary
+            interpreters if multiples are imported in the same go binary. This makes Tholatex potentially
+            viable for integrating across an architecture to generate standardized human readable reports
+            and logging, particularly in self auditing systems 
 
 
-    Note that while the interpreter is embedded in the binary, libraries are loaded from the environment
-        so that binaries with Tholos modules will inherit security updates, without needing to recompile
-        with each library update. This works will with conda envs, when a go binary is executed from one
-        the pinned dependencies are used by thol modules over systemwide dependencies. Therefore you can
-        update with mamba and safely version the environments without recompiling anything. In container
-        applicataions I suggest using miniforge inside the container to manage it with mamba rather than
-        installing dependencies directly to the container
+    Tholos is now able to process jupyter notebooks. This is of course unable to facilitate live edits as
+        the binary is immutable, rather the thol jupyter notebook is able to concretize and execute logic
+        placed into the notebook in the precise state that the original author created it. The recipients
+        do not require any particular jupyter version, or to have jupyter at all, to execute the embedded
+        jupyter binary so any notebooks embedded this way should be reproducable on any machine. The thol
+        jupyter runs entirely from stdin without touching memory. This is particularly valuable for julia
+        workflows, where JIT can be fully leveraged 
 
 
     Only the interpreter is saved to the memory filesystem, the embedded file itself is then loaded into
@@ -99,10 +88,8 @@ Usage:      $ cat Bonjour.py
             When a file is written, it uses the same logic as the interpreter files, avoiding collisions
             by occupying a namespace derived from the current environment and namespace. Thus, two users
             or containers both using the same thol on the same machine have their own copies of any file
-            created by the module
-
-            currently, the following interpreters are written tmpfs:
-                "rust-script", "luatex", "deno", "Rscript", "scala", "wolframscript", "racket", "make"
+            created by the module. If you find folders with very long random names full of libraries and
+            a bash executable, this is why
 
 
     For developers, there are some functions sealMake() and sealBreak() which creates a scoped nonce and
@@ -129,7 +116,7 @@ Usage:      $ cat Bonjour.py
             in dependency managers so specific care must be taken in complex setups i.e. using miniforge
 
 
-    Supported languages
+Supported languages
 bash
 python
 rust      (via rust-script)
@@ -139,25 +126,16 @@ javascript
 ruby
 php
 lua
-luatex
-scala
-deno
+luatex         | Converts and executes in the current working directory. This causes some unavoidable latency but
+jupyter     << | otherwise works the same way as when the notebook was embedded originally. From here, recipients
+scala          | do not require the same (or any) jupyter to be installed to run the notebook. Code added to this
+deno           | notebook therefore will execute internally through stdin making it suitable for multistage procs
+wolfram
 matlab    (via octave)
-wolfram                    | Hugs also works if you use a second file with about 0.1 times the latenxy of runghc
-tcl                        | For this you would need an orchestrator file which you compile with thol. If you're
-rexx                       | writing output to memory or to disk, it's worth considering. The orchestrator would
-scheme    (via racket)     | have the interpreter embedded, but you would need to have the haskell code embedded
-haskell   (via runghc)  << | manually or have it statically reference a .hs in the same location as the thol bin
-                           |     This is because hugs is an actual interpreter whereas runghc is just a compiler
-                           |     that runs JIT when you execute, which is fine for long running applications but
-                           |     highly ineffecient for executables. It seems unlikely anyone will do this but I
-                           |     suggest creating a long running fully featured gcg haskell daemon and spawn the
-                           |     hugs98 processes with low latency to interact with threads from the main daemon
-                           |     The hugs98 would then serve as a bridge form the go binary to the haskell or to
-                           |     itself if runghc is used
-
-
-    Unlikely ever to work with java, julia, or elixir due to their topographies :(
+tcl                  
+rexx                 
+scheme    (via racket)
+haskell   (via runghc)
 
 
 TODO
