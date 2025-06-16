@@ -6,7 +6,7 @@ authors:
   family-names: "Buerer"
   orcid: "https://orcid.org/0009-0002-5084-0465"
 title: "Tholos"
-version: 1.0.0
+version: 2.0.2
 doi: 10.5281/zenodo.15350673
 date-released: 2025-05-06
 url: "https://github.com/Mosstone/Tholos"
