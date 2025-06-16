@@ -150,7 +150,7 @@
     also be used to select the correct interpreter among the built environments, useful for automation
 
 
-developed using the following:
+Developed using the following:
     go version go1.23.9 linux/amd64
     6.14.6-200.fc41.x86_64
         fedora 41, current release
