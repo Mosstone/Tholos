@@ -306,14 +306,14 @@ monolith() {
 
     #   Override for when a custom interpreter is used
     case $interpreter in
-    jupyter)
+    # jupyter)
 
-        interpreter="jupyterExec.py.bin"
-        mkdir -p "./$lib"
-        cp -an "$(realpath "../../.resource/$interpreter")" "$lib"
-        chmod +x $lib/$interpreter
+    #     interpreter="jupyterExec.py.bin"
+    #     mkdir -p "./$lib"
+    #     cp -an "$(realpath "../../.resource/$interpreter")" "$lib"
+    #     chmod +x $lib/$interpreter
 
-    ;;
+    # ;;
 
     *)
         if ! command -v $interpreter >/dev/null; then
