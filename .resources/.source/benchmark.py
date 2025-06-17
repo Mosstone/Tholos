@@ -20,7 +20,7 @@ def printhelp():
 
 def printversion():
     print("""[94m
-    v.2.0.1
+    v.2.0.2
     [0m""")
 
 def monolithe():
@@ -35,6 +35,7 @@ def monolithe():
             os.system(' '.join(sys.argv[1:]))
         except IndexError:
             print("[94m    >><< Un argument est requis...")
+            sys.exit(1)
         
         soir = time.time()
         lumiere = soir - aube
@@ -111,16 +112,21 @@ def main():
 
     recursion = 20
 
-    match sys.argv[1]:
-        case '':
-            printhelp()
-            quit(0)
+    try:
+        match sys.argv[1]:
+            case '':
+                printhelp()
+                quit(0)
 
-        case '-n':
-            recursion = sys.argv[2]
-            args = args[2:]
+            case '-n':
+                recursion = int(sys.argv[2])
+                sys.argv = sys.argv[2:]
+    except IndexError:
+        print("[94m    >><< Un argument est requis...[0m")
+        sys.exit(1)
 
-    while recursion > 1:
+    recursion += 1
+    while int(recursion) > 1:
         monolithe()
         créerLumiere()
         recursion -= 1
