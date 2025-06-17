@@ -27,7 +27,7 @@
         The .go file depends on the /.lib folder that gets created, but the compiler embeds it in the bin
         This utility is language agnostic, automatically embedding the interpreter stated in the schebang
         or indicated by a recognized file extension. The interpreters are automatically hard coded with a
-        set of commannd and environment arguments required by Tholos to execute them reliably
+        set of command and environment arguments required by Tholos to execute them reliably
 
 
     There are two outputs: the compiled .bin executable which is compiled as a fully embedded binary, and
@@ -44,11 +44,11 @@
         but make requires the tmpfs file to be written. This shouldn't affect anything but ninja+meson is
         still a natural fit
             These build methods would allow for dynamic executable builds, simplifying deployment, making
-            metaprogramming versatile and accessible invokable where shell and scripting is not available
+            metaprogramming versatile and accessible invocable where shell and scripting is not available
 
             Tholos is inherently immutable once compiled so the build instruct is also difficult to alter
             without changing the binary itself. If imported into a larger project binary, the application
-            would then have a tamper resistent means of distributed self installation
+            would then have a tamper resistant means of distributed self installation
 
             This also puts all in place for standardized extraction methods for git, since you could just
             type "git clone my/project; ~/project/install.bin" instead of figuring out which build method
@@ -83,7 +83,7 @@
         the binary is immutable, rather the thol jupyter notebook is able to concretize and execute logic
         placed into the notebook in the precise state that the original author created it. The recipients
         do not require any particular jupyter version, or to have jupyter at all, to execute the embedded
-        jupyter binary so any notebooks embedded this way should be reproducable on any machine. The thol
+        jupyter binary so any notebooks embedded this way should be reproducible on any machine. The thol
         jupyter runs entirely from stdin without touching memory. This is particularly valuable for julia
         workflows, where JIT can be fully leveraged 
 
@@ -116,7 +116,7 @@
         is to use miniforge and mamba to provide the binaries, and then reference the environment in the
         application. This way the plugins can receive updates without recompiling the binaries, which is
         preferable for any high stakes system. Python and rust are both chronic offenders but these work
-        well with anaconda. Full containerization is also possible but renders Tholos partially obselete
+        well with anaconda. Full containerization is also possible but renders Tholos partially obsolete
             This is so that the plugins can still receive regular security updates. If a built thol file
             is created which depends on external libraries those other libraries should be considered as
             dependencies of the go project the Tholos module is used in. This may not be fully reflected
@@ -157,6 +157,6 @@ Developed using the following:
 
 
 If this code is used in a publication or in a system which is used in a publication, please cite the following:
-    **Buerer, Daniel** (2025). *Tholos* (Version 2.0.1) [Computer software].
+    **Buerer, Daniel** (2025). *Tholos* (Version 2.1.1) [Computer software].
     https://doi.org/10.5281/zenodo.15350673
 or reference the citation.cff for standard format information
