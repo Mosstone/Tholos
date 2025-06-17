@@ -2,7 +2,7 @@
 #/*
 
 
-version='v. 2.0.2'
+version='v.2.1.1'
 
 
 # Copyright 2025 Daniel Buerer
@@ -165,6 +165,9 @@ brand() {
 
 getlib() { echo ".$(sha512sum <<< $(echo "$PWD$USER"))" | awk '{print $1}'; }
 lib="$(getlib).lib"
+
+
+loc="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 
 
 #   Logic       #################################################
@@ -349,655 +352,371 @@ monolith() {
 ### Metascript start ###############################################################
 #*/
 
-local needFile="false"      #   Defaults to using stdin, write needfile="true" where stdin is not supported
-local CmdFlags              #       Any new interpreters may require a CmdFlags+=("-") if they accept stdin
-local EnvFlags
-case "$interpreter" in
+    local needFile="false"      #   Defaults to using stdin, write needfile="true" where stdin is not supported
+    local CmdFlags              #       Any new interpreters may require a CmdFlags+=("-") if they accept stdin
+    local EnvFlags
+    case "$interpreter" in
 
-    pwsh)
-        CmdFlags+=("-NonInteractive")
-	
-        # EnvFlags+=("LD_LIBRARY_PATH=/opt/microsoft/powershell/7/pwsh.dll")
-        # EnvFlags+=("DOTNET_ROOT=/opt/microsoft/powershell/7/pwsh.dll")
-
-        CmdFlags+=("-")
-    ;;
-
-    python*)
-        #   This is the arguments to be added. The following is the equivalent to running "python -Osu .py"
-        #   All of the defaults here are optimized for performance where possible although the effect would
-        #   be relatively minor. 
-        CmdFlags+=("-O")
-        CmdFlags+=("-s")
-        CmdFlags+=("-u")
-
-
-        CmdFlags+=("-")     #<< | These dash flags need to remain the final cmdFlag in a stanza, if present
-                            #   | Generally exclusive with needFile, it indicates stdin as the input source
-
-
-        #   This is where you would export paths and any other data you want to ensure the thol embed uses 
-		EnvFlags+=("PYTHONPATH=$HOME/Tholos/.libraries/python")
+        pwsh)
+            CmdFlags+=("-NonInteractive")
         
-    ;;
+            # EnvFlags+=("LD_LIBRARY_PATH=/opt/microsoft/powershell/7/pwsh.dll")
+            # EnvFlags+=("DOTNET_ROOT=/opt/microsoft/powershell/7/pwsh.dll")
 
-    bash)
-        CmdFlags+=("-s")
+            CmdFlags+=("-")
+        ;;
 
-        # echo "EnvFlags+=("LD_LIBRARY_PATH=./$lib")"
-    ;;
+        python*)
+            #   This is the arguments to be added. The following is the equivalent to running "python -Osu .py"
+            #   All of the defaults here are optimized for performance where possible although the effect would
+            #   be relatively minor. 
+            CmdFlags+=("-O")
+            CmdFlags+=("-s")
+            CmdFlags+=("-u")
 
-    # rust-script)
-    #     loc="/dev/shm/.$(eyeprint $interpreter)/rust-script"        #   switch the comments to cache 
-    #     # loc="./$lib/rust-script"                                    #   to memory instead of to disc
 
+            CmdFlags+=("-")     #<< | These dash flags need to remain the final cmdFlag in a stanza, if present
+                                #   | Generally exclusive with needFile, it indicates stdin as the input source
 
-    #     CmdFlags+=("--debug")
-    #     CmdFlags+=("-s")
 
+            #   This is where you would export paths and any other data you want to ensure the thol embed uses 
+            EnvFlags+=("PYTHONPATH=$HOME/Tholos/.libraries/python")
+            
+        ;;
 
-    #     needFile="true"
+        bash)
+            CmdFlags+=("-s")
 
+            # echo "EnvFlags+=("LD_LIBRARY_PATH=./$lib")"
+        ;;
 
-    #     EnvFlags+=("RUST_SCRIPT_CACHE=$(realpath $loc)")
-    #     EnvFlags+=("RUST_BACKTRACE=1")
+        # rust-script)
+        #     loc="/dev/shm/.$(eyeprint $interpreter)/rust-script"        #   switch the comments to cache 
+        #     # loc="./$lib/rust-script"                                    #   to memory instead of to disc
 
 
+        #     CmdFlags+=("--debug")
+        #     CmdFlags+=("-s")
 
 
-    #             # needFile="true"
+        #     needFile="true"
 
 
-    #     # CmdFlags+=("-s")
+        #     EnvFlags+=("RUST_SCRIPT_CACHE=$(realpath $loc)")
+        #     EnvFlags+=("RUST_BACKTRACE=1")
 
 
-    #     # # EnvFlags+=("RUST_SCRIPT_CACHE=/dev/shm/.$(eyeprint $interpreter)/rust-script")
-    #     # EnvFlags+=("RUST_SCRIPT_CACHE=./$lib/rust-script")
-    #     # EnvFlags+=("RUST_BACKTRACE=1")
-    # ;;
 
-    rust-script|rust)
-        needFile="true"
 
-        EnvFlags+=("RUST_SCRIPT_CACHE=./$lib/rust-script") # caches the binary in the Tholos files, keeping it away from the system files
-        EnvFlags+=("RUST_BACKTRACE=1")  # shows crash information if there is an error
-    ;;
+        #             # needFile="true"
 
-    node)
-        EnvFlags+=("NODE_PATH=./embedded_node_modules")
 
+        #     # CmdFlags+=("-s")
 
-        CmdFlags+=("-")
-    ;;
 
-    ts-node)
-        CmdFlags+=("--esm") # if esm is desired
-    ;;
+        #     # # EnvFlags+=("RUST_SCRIPT_CACHE=/dev/shm/.$(eyeprint $interpreter)/rust-script")
+        #     # EnvFlags+=("RUST_SCRIPT_CACHE=./$lib/rust-script")
+        #     # EnvFlags+=("RUST_BACKTRACE=1")
+        # ;;
 
-    ruby)
-        CmdFlags+=("-s")
+        rust-script|rust)
+            needFile="true"
 
+            EnvFlags+=("RUST_SCRIPT_CACHE=./$lib/rust-script") # caches the binary in the Tholos files, keeping it away from the system files
+            EnvFlags+=("RUST_BACKTRACE=1")  # shows crash information if there is an error
+        ;;
 
-        CmdFlags+=("-")
-    ;;
+        node)
+            EnvFlags+=("NODE_PATH=./embedded_node_modules")
 
-    php)
-        CmdFlags+=("-")
-    ;;
 
-    perl)
-        CmdFlags+=("-s")
-        CmdFlags+=("-T")
+            CmdFlags+=("-")
+        ;;
 
+        ts-node)
+            CmdFlags+=("--esm") # if esm is desired
+        ;;
 
-        CmdFlags+=("-")
+        ruby)
+            CmdFlags+=("-s")
 
 
-        EnvFlags+=("PERL5LIB=./$lib")
-    ;;
+            CmdFlags+=("-")
+        ;;
 
-    deno)
-        CmdFlags+=("run")
+        php)
+            CmdFlags+=("-")
+        ;;
 
+        perl)
+            CmdFlags+=("-s")
+            CmdFlags+=("-T")
 
-        needFile="true"
-    ;;
 
-    make)
-        CmdFlags+=("-f")
+            CmdFlags+=("-")
 
 
-        needFile="true"
-    ;;
+            EnvFlags+=("PERL5LIB=./$lib")
+        ;;
 
-    racket)
-        needFile="true"
-    ;;
+        deno)
+            CmdFlags+=("run")
 
-    lua)
-    #     # CmdFlags+=("-l")
-    #     # CmdFlags+=("<lib>")
 
+            needFile="true"
+        ;;
 
-    CmdFlags+=("-")         #   test later
-    ;;
+        make)
+            CmdFlags+=("-f")
 
-    lualatex)
-        output="${1%.*}"                #   The name of the pdf output. This default will have "thol Lyon.tex"
-                                        #   create a tex binary which generates "Lyon.pdf" files in the active
-                                        #   directory (not the location of the executable)
 
-        # CmdFlags+=("--output-format=dvi")
-        # CmdFlags+=("--luaonly")       
+            needFile="true"
+        ;;
 
-        CmdFlags+=("--interaction=nonstopmode")
-        CmdFlags+=("--shell-escape")
-        CmdFlags+=("-recorder")
-        CmdFlags+=("--progname=lualatex")
-        CmdFlags+=("--jobname=$output")
+        racket)
+            needFile="true"
+        ;;
 
+        lua)
+        #     # CmdFlags+=("-l")
+        #     # CmdFlags+=("<lib>")
 
-        needFile="true"
 
+        CmdFlags+=("-")         #   test later
+        ;;
 
-        EnvFlags+=("PATH=/usr/bin:$PATH")
-        EnvFlags+=("TEXFORMATS=./lib/tex/formats:/var/lib/texmf/web2c/luahbtex")
-        EnvFlags+=("LUA_PATH=./?.lua;;")
+        lualatex)
+            output="${1%.*}"    #   The name of the pdf output. This default uses the
+                                #   base name, so "thol Lyon.tex" results in Lyon.pdf
 
-    ;;
+            # CmdFlags+=("--output-format=dvi")
+            # CmdFlags+=("--luaonly")       
 
-    scala)
-        needFile="true"
-    ;;
+            CmdFlags+=("--interaction=nonstopmode")
+            CmdFlags+=("--shell-escape")
+            CmdFlags+=("-recorder")
+            CmdFlags+=("--progname=lualatex")
+            CmdFlags+=("--jobname=$output")
 
-    Rscript)
-        CmdFlags+=("--vanilla")
-        CmdFlags+=("-e")
 
+            needFile="true"
 
-        needFile="true"
-        # CmdFlags+=("-")       #   Test stdin for Rscript later
-    ;;
 
-    octave)
-        CmdFlags+=("--silent")
-        CmdFlags+=("--no-gui")
-        # CmdFlags+=("--persistent")      #     If needed
+            EnvFlags+=("PATH=/usr/bin:$PATH")
+            EnvFlags+=("TEXFORMATS=./lib/tex/formats:/var/lib/texmf/web2c/luahbtex")
+            EnvFlags+=("LUA_PATH=./?.lua;;")
 
+        ;;
 
-        # CmdFlags+=("-")   #   verify later
-    ;;
+        scala)
+            needFile="true"
+        ;;
 
-    tcl)
-        CmdFlags+=("-")
-    ;;
+        Rscript)
+            CmdFlags+=("--vanilla")
+            CmdFlags+=("-e")
 
-    rexx)
-        CmdFlags+=("-")
-    ;;
 
-    wolframscript)
-        CmdFlags+=("-file")
+            needFile="true"
+            # CmdFlags+=("-")       #   Test stdin for Rscript later
+        ;;
 
+        octave)
+            CmdFlags+=("--silent")
+            CmdFlags+=("--no-gui")
+            # CmdFlags+=("--persistent")      #     If needed
 
-        needFile="true"
-    ;;
 
-    wolfram)
-        CmdFlags+=("-script")
+            # CmdFlags+=("-")   #   verify later
+        ;;
 
+        tcl)
+            CmdFlags+=("-")
+        ;;
 
-        needFile="true"
-    ;;
+        rexx)
+            CmdFlags+=("-")
+        ;;
 
-    meson)
-        CmdFlags+=("build")
+        wolframscript)
+            CmdFlags+=("-file")
 
 
-        needFile="true"
-    ;;
+            needFile="true"
+        ;;
 
-    ansible)
-        needFile="true"
-    ;;
+        wolfram)
+            CmdFlags+=("-script")
 
-    terraform)
-        CmdFlags+=("apply")
-        CmdFlags+=("-auto-approve")
 
-        # needFile="true"
-        # CmdFlags+=("-")         #   verify later
-    ;;
+            needFile="true"
+        ;;
 
-    jupyter)
-        CmdFlags+=("nbconvert")
-        CmdFlags+=("--to")
-        CmdFlags+=("notebook")
-        CmdFlags+=("--execute")
-        # CmdFlags+=("--inplace")       
-        CmdFlags+=("$tmpPath")
-        CmdFlags+=("--output-dir")
-        CmdFlags+=("$(realpath $(pwd))")
-        CmdFlags+=("--stdin")
-        # CmdFlags+=("/dev/shm/.$(eyeprint $interpreter)/$1")
-        # EnvFlags+=("PYTHONPATH=$HOME/Tholos/.engine/.pyzmq/lib/python3.13/site-packages")
-    ;;
+        meson)
+            CmdFlags+=("build")
 
-    *jupyterExec.py.bin)
-        CmdFlags+=("$2")
-        EnvFlags+=("PYTHONPATH=$HOME/Tholos/.libraries/python")
-    ;;
 
-    *)
-        :
-    ;;
-esac
+            needFile="true"
+        ;;
+
+        ansible)
+            needFile="true"
+        ;;
+
+        terraform)
+            CmdFlags+=("apply")
+            CmdFlags+=("-auto-approve")
+
+            # needFile="true"
+            # CmdFlags+=("-")         #   verify later
+        ;;
+
+        jupyter)
+            CmdFlags+=("nbconvert")
+            CmdFlags+=("--to")
+            CmdFlags+=("notebook")
+            CmdFlags+=("--execute")
+            # CmdFlags+=("--inplace")       
+            CmdFlags+=("$tmpPath")
+            CmdFlags+=("--output-dir")
+            CmdFlags+=("$(realpath $(pwd))")
+            CmdFlags+=("--stdin")
+            # CmdFlags+=("/dev/shm/.$(eyeprint $interpreter)/$1")
+            # EnvFlags+=("PYTHONPATH=$HOME/Tholos/.engine/.pyzmq/lib/python3.13/site-packages")
+        ;;
+
+        *jupyterExec.py.bin)
+            CmdFlags+=("$2")
+            EnvFlags+=("PYTHONPATH=$HOME/Tholos/.libraries/python")
+        ;;
+
+        *)
+            :
+        ;;
+    esac
 
 #   Arguments to inject to the interpreter invocation
-local CmdLine
-[[ -n ${CmdFlags[@]} ]] && {
-    for arg in ${CmdFlags[@]}; do
-        CmdLine+=$"
-    parts = append(parts, \"$arg\")"
-    done
-}
+    local CmdLine
+    [[ -n ${CmdFlags[@]} ]] && {
+        for arg in ${CmdFlags[@]}; do
+            CmdLine+=$"
+        parts = append(parts, \"$arg\")"
+        done
+    }
 
 #   Paths to include in the environment at runtime
-local EnvLine
-[[ -n ${EnvFlags[@]} ]] && {
-    for arg in "${EnvFlags[@]}"; do
-        EnvLine+=$"
-    cmd.Env = append(os.Environ(), \"$arg\")"
+    local EnvLine
+    [[ -n ${EnvFlags[@]} ]] && {
+        for arg in "${EnvFlags[@]}"; do
+            EnvLine+=$"
+        cmd.Env = append(os.Environ(), \"$arg\")"
+        done
+    }
+
+    cat <<< "Embedding with injected command arguments: $CmdLine" > $verbosity
+    cat <<< "Embedding with injected environ arguments: $EnvLine" > $verbosity
+
+
+    length=32
+
+    keyMake() {
+        SealKey=$(openssl rand -hex $1)
+    }; keyMake $length
+
+    suggestion=${1%.*}
+    echo $suggestion > $verbosity  
+
+
+
+
+
+
+#<  Metacode Metagen        #################################################
+
+    local metadir="$loc/.meta"
+
+
+    #   all sigils appearing in the metas should be registered here
+    export eyeInt=$(eyeprint $interpreter)
+    export eyeOne=$(eyeprint $1)
+    export I=$1         #   << | if something broke you probably just used $1 instead of $I
+    # export II=$2      #      | The roman numerals are necessary because it has to be done
+    # export III=$3     #      | in letters instead of numbers for the export to work right
+    # export IV=$4
+    list=(
+        lib
+        interpreter
+        scheterpreter
+        suggestion
+        SealKey
+        CmdLine
+        EnvLine
+        needFile
+    )
+    for e in ${list[@]}; do
+        # shellcheck disable=SC2163
+        export "$e"
     done
-}
 
-cat <<< "Embedding with injected command arguments: $CmdLine" > $verbosity
-cat <<< "Embedding with injected environ arguments: $EnvLine" > $verbosity
 
-#	Creates the (not secure) key which be embedded into the module
-length=32
-
-keyMake() {
-    SealKey=$(openssl rand -hex $1)
-}; keyMake $length
-
-suggestion=${1%.*}
-echo $suggestion > $verbosity
-
-        ls ./"$1".go &>/dev/null || cat <<-EOF > ./"$1".go
-package main
-// package $suggestion
-//      To use as an import, change the package as you would normally, and
-//      in the parent code execute the embedded file using something like
-//      $suggestion.Invoke()
-
-
-// Copyright 2025 Daniel Buerer
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-
-// v2.0.2
-
-
-import (
-    _ "embed"
-    "fmt"
-    "log"
-    "os"
-    "os/exec"
-    "path/filepath"
-    "strings"
-    "runtime"
-    "time"
-
-    "crypto/aes"
-    "crypto/cipher"
-    "crypto/rand"
-    "encoding/hex"
-    // "github.com/google/go-tpm/tpmutil"
-    // "github.com/google/go-tpm/tpm2"
-)
-
-
-//  Resources     //////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-func Trace(err error) {
-    if err != nil {
-
-        // the location to save the error file
-        loc := "logs"
-
-        // gets julian time 
-        now := time.Now().UTC()
-        j := fmt.Sprintf("%02d%03d", now.Year() % 100, now.YearDay())
-        julian := fmt.Sprintf(j + now.Format("150405"))
-
-        // gets file path and line number
-        _, path, line, _ := runtime.Caller(1)
-
-
-        msg := fmt.Errorf(">><< Error occurred in file %s at line %d with error: %w", path, line, err)
-
-        os.MkdirAll(loc, 0770)
-        output := fmt.Sprintf("%s/%s", loc, julian)
-        logErr := os.WriteFile(output, []byte(fmt.Sprintf("%v", msg)), 0600)
-        if logErr != nil {
-            panic(logErr)
-        }
-
-        var realpath, err = filepath.Abs(loc)
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        fmt.Println("Error log created in: " + realpath)
-        log.Fatal(msg)
-
-    }
-}
-
-//go:embed $lib/$interpreter
-var interpreter []byte
-
-//go:embed $1
-var script []byte
-
-// This key is stored in the binary, which is fine for general purpose but not secure unless an external key is used
-// Changing the hexKey value to a tpm provided key and commenting this line would result in a fully compliant system
-// This is intended to be obfuscation, not security. If security is needed comment this and use the function instead
-const hexKey = "$SealKey"
-
-// func sealKey(device, file string) (string, error) {
-//     rwc, err := tpm2.OpenTPM(device)
-//     trace(err)
-//         return "", fmt.Errorf("open TPM: %w", err)
-//     }
-//     defer rwc.Close()
-
-//     primaryHandle, _, err := tpm2.CreatePrimary(rwc, tpm2.HandleOwner, tpm2.PCRSelection{}, "", "", defaultSRKTemplate())
-//     if err != nil {
-//         return "", fmt.Errorf("CreatePrimary: %w", err)
-//     }
-//     defer tpm2.FlushContext(rwc, primaryHandle)
-
-//     var key []byte
-
-//     if _, err := os.Stat(file); os.IsNotExist(err) {
-//         key = make([]byte, 32)
-//         if _, err := rand.Read(key); err != nil {
-//             return "", fmt.Errorf("generate key: %w", err)
-//         }
-
-//         sealedBlob, _, err := tpm2.Seal(rwc, "", "", key, nil)
-//         if err != nil {
-//             return "", fmt.Errorf("seal key: %w", err)
-//         }
-
-//         if err := os.WriteFile(file, sealedBlob, 0600); err != nil {
-//             return "", fmt.Errorf("write sealed blob: %w", err)
-//         }
-
-//     } else {
-//         sealedBlob, err := os.ReadFile(file)
-//         if err != nil {
-//             return "", fmt.Errorf("read sealed blob: %w", err)
-//         }
-
-//         key, err = tpm2.Unseal(rwc, sealedBlob, "")
-//         if err != nil {
-//             return "", fmt.Errorf("unseal key: %w", err)
-//         }
-//     }
-
-//     return hex.EncodeToString(key), nil
-// }
-
-// func defaultSRKTemplate() tpm2.Public {
-//     return tpm2.Public{
-//         Type:       tpm2.AlgRSA,
-//         NameAlg:    tpm2.AlgSHA256,
-//         Attributes: tpm2.FlagStorageDefault &^ tpm2.FlagAdminWithPolicy,
-//         RSAParameters: &tpm2.RSAParams{
-//             Symmetric: &tpm2.SymScheme{
-//                 Alg:     tpm2.AlgAES,
-//                 KeyBits: 128,
-//                 Mode:    tpm2.AlgCFB,
-//             },
-//             Sign: &tpm2.SigScheme{
-//                 Alg:  tpm2.AlgRSASSA,
-//                 Hash: tpm2.AlgSHA256,
-//             },
-//             KeyBits: 2048,
-//             ModulusRaw: make([]byte, 256),
-//         },
-//     }
-// }
-
-// Create a nonce in the scope of the location invoked in. As long as it is not passed outside of the scope, it will
-// not be misused, and any short lived encrypted files will remain secure
-func sealNonce() []byte {
-
-    rng := make([]byte, 12)
-    _, err := rand.Read(rng)
-    Trace(err)
-    return rng
-
-}
-
-// var RuntimeNonce = sealNonce()
-//      Uncomment to expose a nonce which can be used to encrypt ephemeral files used by the embed or its outputs
-//      A new nonce is created each time the embed is executed
-//      Follow with this line to zero the nonce and ensure the nonce is not accidentally reused:
-//      for i := range runtimeNonce { runtimeNonce[i] = 0 }
-
-// Encrypt a plaintext as byte input, which can be decrypted with sealBreak
-// The key is stored in the binary created when this module was built, thus any encrypted keys can only be decrypted
-// by binaries which use this specific module as an import. Built modules could be used for a form of key management
-// controlling scope by which binaries import the same thol modules. Since several modules may be used for different
-// binaries, it may not immediately obvious to an outside observer which modules are being used as a key group since
-// a thol copy of an innocent file, or even different versions of the same module, can be used for binaries to share
-// the same module keys and be able to decrypt each other_s messages built through that module.
-func sealMake(plaintext []byte) ([]byte, error) {
-
-    key, err := hex.DecodeString(hexKey)
-    Trace(err)
-
-    block, err := aes.NewCipher(key)
-    Trace(err)
-
-    gcm, err := cipher.NewGCM(block)
-    Trace(err)
-
-    nonce := sealNonce()
-    ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
-
-    return ciphertext, nil
-
-}
-
-// Decrypt a ciphertext as a byte input, which can be created with sealMake, using the key tied to this specific module
-func sealBreak(ciphertext []byte) ([]byte, error) {
-
-    if len(ciphertext) < 12 {
-        return nil, fmt.Errorf("ciphertext too short")
-    }
-    key, err := hex.DecodeString(hexKey)
-    Trace(err)
-
-    nonce := ciphertext[:12]
-    defer func() {
-        for i := range nonce {
-            nonce[i] = 0
-        }
-    }()
-
-    ciphertext = ciphertext[12:]
-    block, err := aes.NewCipher(key)
-    Trace(err)
-
-    gcm, err := cipher.NewGCM(block)
-    Trace(err)
-
-    return gcm.Open(nil, nonce, ciphertext, nil)
-
-}
-
-func sealExample(message string) string {
-
-    var bytes = []byte(message)
-    var err error
-    // fmt.Println(string(bytes))
-
-    bytes, err = sealMake(bytes)
-    Trace(err)
-    // fmt.Println(string(bytes))
-
-    bytes, err = sealBreak(bytes)
-    Trace(err)
-    // fmt.Println(string(bytes))
-
-    return string(bytes)
-}
-
-// func extrace() { }
-// func extract() { }
-
-
-// Logic    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-func monolith() {
-
-
-
-    //  The path for the interpreter, but not the libraries, to be used at runtime. Falls back to the system interpreter if
-    //  present, but is generally portable unless libraries are used. This is cached after the first run of the session, so
-    //  subsequent executions are marginally faster. Uses a hash of the username and int name by default, but can be easily
-    //  changed here to a specific location or deleted to only use the system interpreter
-    intPath := fmt.Sprintf("%s/$(eyeprint $interpreter)", "/dev/shm/.$(eyeprint $interpreter)")
-    os.MkdirAll(filepath.Dir(intPath), 0755)
-    err := os.WriteFile(intPath + ".atom", interpreter, 0755)
-    os.Rename(intPath + ".atom", intPath)
-
-
-    Trace(err)
-
-    //  The name of the interpreter being used for the embed for the module. Determines which execution logic to use, which
-    //  flags are needed, and whether to use stdin or write to a file
-    interp := "$scheterpreter"
-    parts := strings.Fields(interp)
-    // To add arguments or flags to the interpreter, add lines like the following to the go module
-    // parts = append(parts, "<argument>")
-    $CmdLine // Command flags injected here (or only this comment)
-    parts = append(parts, os.Args[1:]...)
-
-
-    //	Determines whether the interpreter can use stdin or if it needs a file to be written to tmpfs
-    var needFile bool = $needFile
-
-    var tmpPath string
-    if needFile {
-
-        tmpPath = fmt.Sprintf("%s/$(eyeprint $1)", "/dev/shm/.$(eyeprint $1)")
-        os.MkdirAll(filepath.Dir(tmpPath), 0755)
-
-        if err := os.WriteFile(tmpPath + ".atom", script, 0755); err != nil {
-            Trace(err)
-        }
-
-        os.Rename(tmpPath + ".atom", tmpPath)
-
-        defer os.Remove(tmpPath)
-        parts = append(parts, tmpPath)
-
+    metalith() {
+        envsubst < $metadir/core.go.meta > ./"$I".go
     }
 
-    //  Executes the embedded file, using the custom library path but falling back to system libraries if anything is missing
-    cmd := exec.Command(intPath, parts[1:]...)
-    $EnvLine //	Environ flags injected here (or just this comment)
 
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-
-    //  Sends the file to stdin if the interpreter is in a language that supports is, otherwise writes to memory temporarily
-    //  To modify behaviour, add or remove interpreters from needFile above
-    if !needFile {
-        stdinPipe, err := cmd.StdinPipe()
-        Trace(err)
-
-        if err := cmd.Start(); err != nil {
-            Trace(err)
-        }
-
-        _, err = stdinPipe.Write(script)
-        Trace(err)
-
-        stdinPipe.Close()
-    } else {
-        if err := cmd.Start(); err != nil {
-            Trace(err)
-        }
-    }
-
-    if err := cmd.Wait(); err != nil {
-        Trace(err)
-    }
-
-    for i := range interpreter {
-        interpreter[i] = 0
-    }
-    for i := range script {
-        script[i] = 0
-    }
-
-}
-
-
-func main() {
-
-    monolith()
-
-}
-
-
-func Invoke() {
-    main()
-}
-
-
-EOF
+    clobber=0
+    if [[ $clobber == 1 ]]; then        #   change to 1 if you want to keep modules
+        ls ./"$I".go &>/dev/null || \   #   after modifying them and instead create
+        metalith                        #   executables from the modified thol mods
+    else                                #   Mostly useful for toolsmiths who do not
+        rm ./"$I".go &>/dev/null        #   want their custom .go logic to be reset
+        metalith                        #   when embedding technicolour mad hattery
+        # envsubst < $metadir/import > ./"$I".go
+    fi
 
 #/*
 ### Metascript fin #################################################################
 ####################################################################################
 
 
-		if [[ "$@" =~ '--cgo' ]]; then
-			cgo=1
-		else
-			cgo=0
-		fi
+#<  Compiler flags
+    if [[ "$@" =~ '--cgo' ]]; then
+        cgo=1   #<< | Cgo is required for bridge integrations. Impact is negligible
+    else        #   | but existent. The default is cgo disabled. Revert as required
+        cgo=0   #   | though this is done automatically when using one of the below
+    fi          #   | flags if the integration requires it
 
-		if command -v go &>/dev/null; then
-			GOOS=linux GOARCH=amd64 CGO_ENABLED=$cgo go build -ldflags="-s -w" -o "$1.bin" "$1.go" && strip "$1.bin"
-		else
-			echo "[094m    Golang is not installed...[0m"
-			exit 1
-		fi
+    if [[ "$@" =~ '--nif' ]]; then
+        :       #<< | Enables nif for elixir which is very low latency, but crashes
+        cgo=1   #   | are severe so treat this as an unsafe option. Elixir also can
+    fi          #   | use the --cgo option, and use ports. Only really relevant for
+                #   | here if the elixir specifically needs access to the functions
+                #   | embedded in the thol, or if the thol module would be modified
+                #   | to provide hardware access by virtue of already using cgo. So
+                #   | for example keeping the thol as main, and then importing cuda
+                #   | related code into that. The compiler in that case should look
+                #   | something similar to this stanza
 
 
+    if [[ "$@" =~ '--dwarf' ]]; then
+        :                           #   Disables debug information which poses some
+    else                            #   limited bloat and security risk. This might
+        :                           #   be enabled for production but not where the
+        ldflags='-ldflags=-w'       #   module expected to work fine, or there is a
+    fi                              #   threat model to consider. Tholos has logged
+                                    #   errors which appear in the logs/ folder, so
+                                    #   there is still debug information
+
+#<  Compiler command
+    if command -v go &>/dev/null; then
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=$cgo go build "$ldflags" -o "$1.bin" "$1.go" && strip "$1.bin"
+    else
+        echo "[094m    Golang is not installed...[0m"
+        exit 1
+    fi
+
+
+#<  Link to path if --link or --path is used, allowing the standalone to be used in cli immediately (useful in make)
 	if [[ "$@" =~ --link ]] || [[ "$@" =~ --path ]]; then
 		mkdir -p ~/.local/bin/
 		ln -sf "$(realpath "$1".bin)" ~/.local/bin/"$1"

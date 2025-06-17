@@ -2,10 +2,11 @@
 
 version       = "0.1.0"
 author        = "Mosstone"
-description   = "A new awesome nimble package"
+description   = "Tholos nimble package"
 license       = "Apache-2.0"
 srcDir        = "src"
-bin           = @["anchor"]
+installExt    = @["nim"]
+bin           = @["Tholos"]
 
 
 # Dependencies

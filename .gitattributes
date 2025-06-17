@@ -1,6 +1,8 @@
 .examples/** linguist-vendored
 .libraries/** linguist-vendored
 .engine/** linguist-vendored
+*.go.meta linguist-language=Go
+
 
 *.tf.bin filter=lfs diff=lfs merge=lfs -text
 examples/deno/deno filter=lfs diff=lfs merge=lfs -text
