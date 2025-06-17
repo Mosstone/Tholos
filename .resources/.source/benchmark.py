@@ -15,7 +15,7 @@ def printhelp():
     print("""[94m
     Scope adapting microbenchmark. Follow with any command, works fine with complex ones
 
-    benchmark -n <int> to specify number of iterations, default is 20, units are in french
+    benchmark -n <int> to specify number of iterations, default is 1
     [0m""")
 
 def printversion():
@@ -110,7 +110,7 @@ def créerLumiere():
 
 def main():
 
-    recursion = 20
+    recursion = 1
 
     try:
         match sys.argv[1]:
