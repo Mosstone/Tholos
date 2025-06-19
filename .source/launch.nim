@@ -74,13 +74,15 @@ var loc = getAppDir()
 
 proc launchTholos() =
 
-    proc route(): string =
-        result = execProcess(loc & "/services/thol/thol " & arg)
+    
+    var path =  "/services/thol/thol "
+        
+    
 
     if verbosity:       stdout.write("\e[94m    Executing...\e[0m")
     flushFile(stdout)
-    if quietitude:      discard route()
-    if not quietitude:  echo route()
+    if quietitude:      discard execProcess(loc & path & arg)
+    if not quietitude:  discard execCmd(loc & path & arg)
     if verbosity:       stdout.write("\r\e[94m  ✓ Executing...done\e[0m\n")
 
 
